@@ -28,6 +28,7 @@ User Management
 
 ## Authors
 Emil Jake L. Aringo
+Arjay R. Acosta
 
 
 ### MIT License

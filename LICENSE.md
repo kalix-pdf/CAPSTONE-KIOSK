@@ -1,7 +1,7 @@
 
 ### MIT License
 
-Copyright (c) 2026 AISAT College Dasmariñas
+Copyright (c) 2026 AISAT College Dasmariñas, [Emil Jake L. Aringo], [Arjay R. Acosta]
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -1,0 +1,193 @@
+// const mockProducts: Product[] = [
+//   {
+//     id: "1",
+//     name: "Ibuprofen 200mg",
+//     category: "Pain Relief",
+//     dosage: "200mg tablets",
+//     prescriptionRequired: false,
+//     manufacturer: "PharmaCo",
+//     description: "Anti-inflammatory medication for pain relief and fever reduction. Take with food.",
+//     barcode: "5601234567890",
+//     price: 8.99,
+//     stock: 45,
+//     activeIngredient: "Ibuprofen",
+//     sideEffects: "May cause stomach upset, dizziness. Avoid with blood thinners.",
+//     type: "generic"
+//   },
+//   {
+//     id: "2",
+//     name: "Amoxicillin 500mg",
+//     category: "Antibiotics",
+//     dosage: "500mg capsules",
+//     prescriptionRequired: true,
+//     manufacturer: "MediPharm",
+//     description: "Broad-spectrum antibiotic for bacterial infections. Complete full course as prescribed.",
+//     barcode: "5601234567891",
+//     price: 15.99,
+//     stock: 30,
+//     activeIngredient: "Amoxicillin",
+//     sideEffects: "Possible allergic reactions, diarrhea, nausea.",
+//     type: "branded"
+//   },
+//   {
+//     id: "3",
+//     name: "Vitamin D3 1000IU",
+//     category: "Vitamins & Supplements",
+//     dosage: "1000IU softgels",
+//     prescriptionRequired: false,
+//     manufacturer: "VitaHealth",
+//     description: "Essential vitamin for bone health and immune system support.",
+//     barcode: "5601234567892",
+//     price: 12.50,
+//     stock: 60,
+//     activeIngredient: "Cholecalciferol",
+//     sideEffects: "Generally well-tolerated. High doses may cause weakness.",
+//     type: "branded"
+//   },
+//   {
+//     id: "4",
+//     name: "Omeprazole 20mg",
+//     category: "Digestive Health",
+//     dosage: "20mg tablets",
+//     prescriptionRequired: false,
+//     manufacturer: "GastroMed",
+//     description: "Proton pump inhibitor for acid reflux and heartburn relief.",
+//     barcode: "5601234567893",
+//     price: 18.99,
+//     stock: 25,
+//     activeIngredient: "Omeprazole",
+//     sideEffects: "Headache, diarrhea, stomach pain.",
+//     type: "generic"
+//   },
+//   {
+//     id: "5",
+//     name: "Aspirin 81mg",
+//     category: "Cardiovascular",
+//     dosage: "81mg tablets",
+//     prescriptionRequired: false,
+//     manufacturer: "CardioHealth",
+//     description: "Low-dose aspirin for cardiovascular protection. Consult doctor before use.",
+//     barcode: "5601234567894",
+//     price: 6.99,
+//     stock: 80,
+//     activeIngredient: "Acetylsalicylic Acid",
+//     sideEffects: "Bleeding risk, stomach irritation.",
+//     type: "generic"
+//   },
+//   {
+//     id: "6",
+//     name: "Antibiotic Cream",
+//     category: "First Aid",
+//     dosage: "15g tube",
+//     prescriptionRequired: false,
+//     manufacturer: "SkinCare Plus",
+//     description: "Topical antibiotic for minor cuts, scrapes and burns.",
+//     barcode: "5601234567895",
+//     price: 9.99,
+//     stock: 35,
+//     activeIngredient: "Neomycin/Polymyxin B",
+//     sideEffects: "Mild skin irritation or rash may occur.",
+//     type: "branded"
+//   },
+//   {
+//     id: "7",
+//     name: "Lisinopril 10mg",
+//     category: "Cardiovascular",
+//     dosage: "10mg tablets",
+//     prescriptionRequired: true,
+//     manufacturer: "CardioMed",
+//     description: "ACE inhibitor for high blood pressure management.",
+//     barcode: "5601234567896",
+//     price: 22.99,
+//     stock: 20,
+//     activeIngredient: "Lisinopril",
+//     sideEffects: "Dizziness, dry cough, headache.",
+//     type: "branded"
+//   },
+//   {
+//     id: "8",
+//     name: "Cetirizine 10mg",
+//     category: "Allergy Relief",
+//     dosage: "10mg tablets",
+//     prescriptionRequired: false,
+//     manufacturer: "AllerFree",
+//     description: "Non-drowsy antihistamine for seasonal allergies.",
+//     barcode: "5601234567897",
+//     price: 11.99,
+//     stock: 50,
+//     activeIngredient: "Cetirizine HCl",
+//     sideEffects: "Drowsiness, dry mouth, fatigue.",
+//     type: "generic"
+//   }
+// ];
+
+
+
+ // Generate AI-powered information for a medicine
+  // const generateAIInfo = (product: Product) => {
+  //   setAiLoading(true);
+  //   setAiInfo(null);
+    
+  //   // Simulate AI processing delay
+  //   setTimeout(() => {
+  //     const mockAIInfo = {
+  //       overview: `${product.name} is a ${product.category.toLowerCase()} medication containing ${product.activeIngredient}. It is primarily used to treat various conditions related to ${product.category.toLowerCase()}.`,
+  //       howToUse: [
+  //         `Take ${product.dosage} as directed by your healthcare provider`,
+  //         "Can be taken with or without food unless otherwise specified",
+  //         "Swallow tablets/capsules whole with a full glass of water",
+  //         "Do not crush, chew, or break unless advised by pharmacist",
+  //         "Take at the same time each day for best results"
+  //       ],
+  //       dosageRecommendations: {
+  //         adults: `Standard adult dose: ${product.dosage}`,
+  //         elderly: "May require dose adjustment - consult physician",
+  //         children: product.prescriptionRequired ? "Prescription required - consult pediatrician" : "Consult pediatrician before use",
+  //         notes: "Always follow your doctor's specific instructions"
+  //       },
+  //       drugInteractions: [
+  //         "May interact with blood thinners (warfarin, aspirin)",
+  //         "Avoid alcohol consumption while taking this medication",
+  //         "May interact with certain antibiotics and antifungals",
+  //         "Inform your doctor about all medications you are taking"
+  //       ],
+  //       precautions: [
+  //         "Not suitable for pregnant or breastfeeding women without medical advice",
+  //         "May cause drowsiness - avoid driving if affected",
+  //         "Discontinue use if allergic reaction occurs",
+  //         "Keep out of reach of children",
+  //         "Do not exceed recommended dose"
+  //       ],
+  //       storage: [
+  //         "Store at room temperature (20-25°C / 68-77°F)",
+  //         "Keep away from direct sunlight and moisture",
+  //         "Do not store in bathroom or near heat sources",
+  //         "Keep container tightly closed when not in use",
+  //         `Check expiration date before use`
+  //       ],
+  //       whenToSeekHelp: [
+  //         "If symptoms persist or worsen after 3-5 days",
+  //         "If you experience severe allergic reactions (rash, swelling, difficulty breathing)",
+  //         "If you accidentally take more than the recommended dose",
+  //         "If you develop new or unusual symptoms"
+  //       ],
+  //       faqs: [
+  //         {
+  //           q: "Can I take this medication on an empty stomach?",
+  //           a: "It's generally recommended to take with food to minimize stomach upset, but follow your doctor's specific instructions."
+  //         },
+  //         {
+  //           q: "What should I do if I miss a dose?",
+  //           a: "Take the missed dose as soon as you remember, unless it's almost time for your next dose. Never double up doses."
+  //         },
+  //         {
+  //           q: "How long does it take to work?",
+  //           a: "Effects typically begin within 30-60 minutes, but full therapeutic effect may take several days of consistent use."
+  //         }
+  //       ]
+  //     };
+      
+  //     setAiInfo(mockAIInfo);
+  //     setAiLoading(false);
+  //   }, 1500); // Simulate AI processing time
+  // };

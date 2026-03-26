@@ -1,10 +1,10 @@
 import express from "express";
 import { getCategories, getProductsByCategory, createOrder, processOCRImage, adminLogin,
   fetchTotalDashboard, fetchAllProducts, addActivityLogs, fetchAllActivityLogs, fetchOrders, 
-  fetchTotalCompletedToday, OrderUpdate, AllOrdersQeueueDisplay } 
+  fetchTotalCompletedToday, OrderUpdate, AllOrdersQeueueDisplay, getActiveCategory } 
 from "../controllers/user.controller.js";
 import { ProductUpdate, AddNewProduct, ProductDeactivate } from "../controllers/product.controller.js";
-import { CategoryAdd } from "../controllers/category.controller.js";
+import { CategoryAdd, categoryDelete } from "../controllers/category.controller.js";
 import { AIPoweredProductDetails, PrescriptionAIPowered, MedinceScannerAIPowered } from "../controllers/generativeAI.controller.js";
 
 
@@ -43,6 +43,7 @@ const upload = multer({
 
 
 router.get("/categories", getCategories);
+router.get("/activeCategories", getActiveCategory);
 router.get("/category/:categoryid/products", getProductsByCategory);
 router.post("/order", createOrder);
 router.post("/ocr/process", upload.single('prescription'), processOCRImage);
@@ -61,6 +62,7 @@ router.get("/admin/ActivityLogs", fetchAllActivityLogs);
 router.get("/admin/orders", fetchOrders)
 router.get("/admin/AllOrders", AllOrdersQeueueDisplay)
 
+router.post("/admin/delete/category/:category_id", categoryDelete)
 
 router.get("/admin/completedToday", fetchTotalCompletedToday)
 router.post("/admin/update/product", ProductUpdate);

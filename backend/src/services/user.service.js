@@ -3,10 +3,18 @@ import bcrypt from "bcrypt";
 
 export const getAllCategories = async () => {
   const { rows } = await db.query(`SELECT c.id, c.name, c.icon, c.color, COUNT(p.id)::int as medications_per_category 
+                              FROM categories c LEFT JOIN product p ON c.id = p.category AND p.status =1 
+                              WHERE c.status = 1 GROUP BY c.id, c.name, c.icon, c.color ORDER BY c.id`);
+  return rows;
+};
+
+
+export const getActiveCategories = async() => {
+  const { rows } = await db.query(`SELECT c.id, c.name, c.icon, c.color, COUNT(p.id)::int as medications_per_category 
                               FROM categories c INNER JOIN product p ON c.id = p.category WHERE c.status = 1 AND p.status = 1
                               GROUP BY c.id, c.name, c.icon, c.color ORDER BY c.id`);
   return rows;
-};
+}
 
 export const getProductsByCategoryId = async (categoryId) => {
   const query = `SELECT p.id, p.name, p.price, p.dosage, p.prescriptionrequired, p.manufacturer, 
@@ -138,7 +146,8 @@ export const getAllProducts = async() => {
   const { rows } = await db.query(`SELECT p.id, p.name, p.category, p.dosage, p.prescriptionrequired,
       p.manufacturer, p.barcode, p.price, p.stock, p.status, pd.type, pd.description,
       pd.active_ingredients, pd.side_effects, c.name as category_name FROM product p 
-      JOIN categories c ON p.category = c.id LEFT JOIN product_description pd ON p.id = pd.product_id WHERE p.status = 1`);
+      JOIN categories c ON p.category = c.id LEFT JOIN product_description pd ON p.id = pd.product_id WHERE p.status = 1
+       ORDER BY p.id DESC`);
   
   return rows;
 }

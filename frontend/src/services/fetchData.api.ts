@@ -16,6 +16,10 @@ export const fetchCategories = async (): Promise<Category[]> => {
   return fetchData<Category[]>(`${API_URL}/api/categories`);
 };
 
+export const fetchActiveCategoriesByProduct = async(): Promise<Category[]> => {
+  return fetchData<Category[]>(`${API_URL}/api/activeCategories`);
+}
+
 export const fetchProductsByCategory = async (categoryid: number): Promise<Product[]> => {
   return fetchData<Product[]>(`${API_URL}/api/category/${categoryid}/products`);
 }

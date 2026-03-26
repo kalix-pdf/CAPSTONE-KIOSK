@@ -10,18 +10,18 @@ export interface Category {
 export interface Product {
   id: number;
   name: string;
+  image: string | File;
   category: string;
-  image_url: string;
   categoryid: number;
   dosage: string;
   prescriptionrequired: number;
   manufacturer: string;
-  description: string;
+  // description: string;
   barcode: string;
   price: number;
   stock: number;
   active_ingredients: string;
-  side_effects: string;
+  // side_effects: string;
   type: number;
   category_name: string;
 }

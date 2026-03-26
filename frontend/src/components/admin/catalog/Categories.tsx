@@ -12,10 +12,10 @@ import { Input } from "../../ui/input";
 import { addNewCategory, addActivityLog } from "../../../services/admin/addData.api";
 import { getRandomColor, getRandomIcon } from "../../../utils/iconMap";
 import { useAuth } from "../AuthContext";
+import { deleteCategory } from "../../../services/admin/updateData.api";
 
 export const Categories = () => {
     const [categories, setCategories] = useState<Category[]>([]);
-    const [loading, setLoading] = useState(true);
     const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
     const [isDeleteCategoryDialogOpen, setIsDeleteCategoryDialogOpen] = useState(false);
     const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
@@ -23,15 +23,13 @@ export const Categories = () => {
     const { userId } = useAuth();
 
     useEffect(() => {
-        fetchCategories()
-          .then(res => {
-            setCategories(res); 
-          })
-          .catch(console.error)
-          .finally(() => setLoading(false));
-      }, []); 
+        getCategories();
+    }, []); 
     
-    if (loading) return <p>Loading...</p>;
+    const getCategories = async() => {
+      const result = await fetchCategories();
+      setCategories(result);
+    }
 
     const confirmDeleteCategory = (category: Category) => {
         setCategoryToDelete(category);
@@ -62,10 +60,17 @@ export const Categories = () => {
       setIsCategoryDialogOpen(false);
     };
 
-    const handleDeleteCategory = () => {
+    const handleDeleteCategory = async() => {
         if (!categoryToDelete) return;
     
-        toast.success("Category deleted successfully");
+        const result = await deleteCategory(categoryToDelete.id);
+        if (result.success) {
+          toast.success("Category deleted successfully");
+          getCategories();
+
+        } else {
+          toast.error("Something went wrong");
+        }
 
         setIsDeleteCategoryDialogOpen(false);
         setCategoryToDelete(null);

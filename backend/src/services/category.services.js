@@ -33,3 +33,18 @@ export const addNewCategory = async(categoryData) => {
         client.release();
     }
 }
+
+export async function deleteCategoryByID(categoryID) {
+    if (!categoryID) throw new Error("ID is required");
+    
+    const query = `UPDATE categories SET status = 0 WHERE id = $1 RETURNING name`;
+    const result = await db.query(query, [categoryID]);
+
+    if (result.rowCount === 0) {
+        return { success: false, message: "Something went wrong"};
+    }
+    
+    const name = result.rows[0].name;  
+
+    return { success: true, message: `Successfully deleted ${name}`};
+}

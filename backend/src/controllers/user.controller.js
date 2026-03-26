@@ -11,6 +11,16 @@ export const getCategories = async (req, res, next) => {
     }
 };
 
+export const getActiveCategory = async(req, res) => {
+    try {
+         const activeCategory = await userService.getActiveCategories();
+         res.status(200).json(activeCategory);
+
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const getProductsByCategory = async (req, res, next) => {
     try {
         const products = await userService.getProductsByCategoryId(req.params.categoryid);

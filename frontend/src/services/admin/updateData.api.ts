@@ -1,7 +1,7 @@
 import { API_URL } from "../url.api";
 import { Product } from "../Props";
 
-export const updateData = async (endpoint: string, body: any) => {
+export const updateData = async (endpoint: string, body?: any) => {
   const response = await fetch(endpoint, {
     method: "POST",
     headers: { 'Content-Type': 'application/json' },
@@ -30,4 +30,8 @@ export const updateOrder = async(type: number, orderId: number) => {
 export const SSE = () => {
   const es = new EventSource(`${API_URL}/api/queue/stream`);
   return es;
+}
+
+export const deleteCategory = async(category_id: number) => {
+  return updateData(`${API_URL}/api/admin/delete/category/${category_id}`);
 }

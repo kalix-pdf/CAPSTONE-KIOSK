@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Category } from "../../../services/Props";
-import { fetchCategories } from "../../../services/fetchData.api";
+import { fetchActiveCategoriesByProduct } from "../../../services/fetchData.api";
 import { iconMap } from "../../../utils/iconMap";
 import { Package } from "lucide-react";
 import { Card, CardContent } from "../../ui/card";
@@ -16,7 +16,7 @@ const Categories = ({selectedCategoryID, setSelectedCategoryID}: CategoriesProps
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchCategories()
+    fetchActiveCategoriesByProduct()
       .then(res => {
         setCategories(res); 
       })

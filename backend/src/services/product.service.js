@@ -4,8 +4,9 @@ import bcrypt from "bcrypt";
 
 export const updateProduct = async(productData) => {
     const { id, name, dosage, prescriptionrequired, manufacturer, barcode, price, 
-            stock, type, description, side_effects, active_ingredients } = productData
-
+            stock, type, active_ingredients } = productData
+        console.log(productData);
+        
     if (!id) throw new Error("Product ID is required");
 
     const client = await db.connect();
@@ -23,10 +24,10 @@ export const updateProduct = async(productData) => {
             return { success: false, message: "No product found with that ID" };
         }
 
-        if (description) {
-            const descriptipQuery = `UPDATE product_description SET description = $1, side_effects = $2, active_ingredients = $3, 
-                                    type = $4, image_url = 'placeholder.png' WHERE product_id = $5`;
-            const descriptionResult = await client.query(descriptipQuery, [description, side_effects, active_ingredients, type, id]);
+        if (id) {
+            const descriptipQuery = `UPDATE product_description SET active_ingredients = $1, 
+                                    type = $2, image_url = 'placeholder.png' WHERE product_id = $3`;
+            const descriptionResult = await client.query(descriptipQuery, [active_ingredients, type, id]);
         
             if (descriptionResult.rowCount === 0) {
                 await client.query("ROLLBACK");
@@ -49,15 +50,14 @@ export const updateProduct = async(productData) => {
 }
 
 export const addProduct = async(newProduct) => {
-    const { name, dosage, prescriptionrequired, manufacturer, barcode, price, 
-            stock, type, description, side_effects, active_ingredients } = newProduct
+    const { name, dosage, prescriptionrequired, manufacturer, barcode, price, active_ingredients,
+            stock, type  } = newProduct
 
     const isEmpty = (val) => val === null || val === undefined || val === '';
 
     if (isEmpty(name) || isEmpty(dosage) || isEmpty(prescriptionrequired) || 
         isEmpty(manufacturer) || isEmpty(barcode) || isEmpty(price) || 
-        isEmpty(stock) || isEmpty(type) || isEmpty(description) || 
-        isEmpty(side_effects) || isEmpty(active_ingredients)) {
+        isEmpty(stock) || isEmpty(type)) {
         throw new Error("All fields are Required!");
     }
 
@@ -77,11 +77,11 @@ export const addProduct = async(newProduct) => {
 
         const product_id = result.rows[0].id;
 
-        if (description) {
-            const descriptionQuery = `INSERT INTO product_description(product_id, description, side_effects, active_ingredients, type, image_url)
-                                     VALUES($1, $2, $3, $4, $5, 'placeholder.png')`;
+        if (product_id) {
+            const descriptionQuery = `INSERT INTO product_description(product_id, active_ingredients, type, image_url)
+                                     VALUES($1, $2, $3, 'placeholder.png')`;
                 
-            const descriptionResult = await client.query(descriptionQuery, [product_id, description, side_effects, active_ingredients, type]);
+            const descriptionResult = await client.query(descriptionQuery, [product_id, active_ingredients, type]);
             
             if (descriptionResult.rowCount === 0) {
                 await client.query("ROLLBACK");

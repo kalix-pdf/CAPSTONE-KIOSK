@@ -5,7 +5,6 @@ import { DialogHeader, DialogTitle } from "../../ui/dialog";
 import { Input } from "../../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 import { Label } from "../../ui/label";
-import { Textarea } from "../../ui/textarea";
 import { Switch } from "../../ui/switch";
 import { useEffect, useState } from "react";
 import { toast } from 'sonner';
@@ -14,24 +13,26 @@ import { updateProduct } from "../../../services/admin/updateData.api";
 import { useAuth } from "../AuthContext";
 import { detectChanges } from "../../../utils/detectChanges";
 import { addProduct, addActivityLog } from "../../../services/admin/addData.api";
+import { Trash2, Image } from "lucide-react";
 
-export const EditMedication = ( { product, onClose}: { product: Product | null; onClose: () => void; }) => {
+export const EditMedication = ( { product, onClose, getActiveProducts}: { product: Product | null; onClose: () => void; getActiveProducts: () => void }) => {
     const [categories, setCategories] = useState<Category[]>([]);
     const [categoriesLoaded, setCategoriesLoaded] = useState(false);
     const [formData, setFormData] = useState<Partial<Product>>({
             id: product?.id,
             name: product?.name ?? "",
+            image: product?.image ?? "",
             category: "",
             dosage: product?.dosage ?? "",
             prescriptionrequired: product?.prescriptionrequired ?? 0,
             manufacturer: product?.manufacturer ?? "",
-            description: product?.description ?? "",
             barcode: product?.barcode ?? "",
             price: product?.price ?? 0,
             stock: product?.stock ?? 0,
-            active_ingredients: product?.active_ingredients ?? "",
-            side_effects: product?.side_effects ?? "",
             type: product?.type ?? 0,
+            active_ingredients: product?.active_ingredients ?? "",
+            // description: product?.description ?? "",
+            // side_effects: product?.side_effects ?? "",
           });
     const { userId } = useAuth();
     
@@ -48,7 +49,16 @@ export const EditMedication = ( { product, onClose}: { product: Product | null; 
             })
             .catch(console.error);
     }, []);
-        
+
+    const getImageSrc = (image: File | string | null): string => {
+        if (image instanceof File) {
+        return URL.createObjectURL(image);
+        }
+        if (typeof image === 'string') {
+        return image.replace("/upload/", "/upload/f_auto,q_auto/");
+        }
+        return '';
+    };
 
     const handleCloseDialog = () => {
         onClose();
@@ -58,12 +68,10 @@ export const EditMedication = ( { product, onClose}: { product: Product | null; 
             dosage: "",
             prescriptionrequired: 0,
             manufacturer: "",
-            description: "",
             barcode: "",
             price: 0,
             stock: 0,
             active_ingredients: "",
-            side_effects: "",
             type: 0
         });
     };
@@ -84,24 +92,21 @@ export const EditMedication = ( { product, onClose}: { product: Product | null; 
                 });
 
                 if (result.success) {
-                    toast.info("Product Updated Successfully! Automatic Reload in 3...2...");
-
+                    toast.info("Product Updated Successfully!");
+                    getActiveProducts();
+                    onClose();
+                    
                     setFormData({
                         name: "",
                         category: "",
                         dosage: "",
                         prescriptionrequired: 0,
                         manufacturer: "",
-                        description: "",
                         barcode: "",
                         price: 0,
-                        stock: 0,
                         active_ingredients: "",
-                        side_effects: ""
+                        stock: 0,
                     });
-                    setTimeout(function () {
-                        window.location.reload();
-                    }, 2000);
                 } 
             } 
             else {
@@ -109,15 +114,16 @@ export const EditMedication = ( { product, onClose}: { product: Product | null; 
 
                 if (result.success) {
                     toast.success(result.message);
+                    getActiveProducts();
+                    onClose();
 
                     addActivityLog(userId, 1, 'Added New Product', `${formData.name} has been added to the inventory`,
                     {
                         productId: result.product_id,
                     });
-                    
-                    setTimeout(function () {
-                        window.location.reload();}, 2000);
-                
+
+                    onClose();
+
                 } else {
                     toast.error(result.message);
                 }
@@ -141,16 +147,41 @@ export const EditMedication = ( { product, onClose}: { product: Product | null; 
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-gray-400 transition cursor-pointer">
+                      {formData.image ? (
+                        <div className="relative">
+                          <img src={getImageSrc(formData.image)}
+                            alt="Preview" className="w-full h-48 object-cover rounded-lg" />
+                          <button onClick={() => setFormData({ ...formData, image: "" })}
+                            className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition" >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <input type="file" accept="image/*" className="hidden"
+                            id="image" onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] ?? undefined }) } />
+                          <label htmlFor="image" className="cursor-pointer">
+                            <div className="flex flex-col items-center gap-2 p-4">
+                              <Image className="w-8 h-8 text-gray-400" />
+                              <p className="text-gray-600">Click to upload or drag and drop</p>
+                              <p className="text-sm text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                            </div>
+                          </label>
+                        </>
+                      )}
+                    </div>
+                    
                     <div className="space-y-2">
-                    <Label htmlFor="name">Medication Name</Label>
-                    <Input id="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="e.g., Ibuprofen 200mg" required className="capitalize"/>
+                        <Label htmlFor="name">Medication Name</Label>
+                        <Input id="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            placeholder="e.g., Ibuprofen 200mg" required className="capitalize"/>
                     </div>
 
                     <div className="space-y-2">
                     <Label htmlFor="category">Category</Label>
                     {categoriesLoaded ? (
-                        <Select value={formData.category}
+                        <Select value={formData.category} required
                             onValueChange={(value) => setFormData({ ...formData, category: value })}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select category" />
@@ -207,7 +238,7 @@ export const EditMedication = ( { product, onClose}: { product: Product | null; 
                     </div>
                 </div>
 
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                     <Label htmlFor="description">Description</Label>
                     <Textarea id="description" value={formData.description} className="capitalize"
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -218,17 +249,17 @@ export const EditMedication = ( { product, onClose}: { product: Product | null; 
                     <Label htmlFor="sideEffects">Side Effects & Warnings</Label>
                     <Textarea id="sideEffects" value={formData.side_effects} onChange={(e) => setFormData({ ...formData, side_effects: e.target.value })}
                     rows={2} placeholder="List potential side effects and warnings" required className="capitalize"/>
-                </div>
+                </div> */}
 
                 <div className="flex items-center space-x-2">
-                    <Switch id="prescriptionRequired" checked={formData.prescriptionrequired === 1}
+                    <Switch id="prescriptionRequired" checked={formData.prescriptionrequired === 1} 
                     onCheckedChange={(checked: boolean) => setFormData({ ...formData, prescriptionrequired: checked ? 1 : 0 })}/>
                     <Label htmlFor="prescriptionRequired">Requires Prescription</Label>
                 </div>
 
                 <div className="flex items-center space-x-2">
                     <Label htmlFor="prescriptionRequired">Generic </Label>
-                    <Switch id="type" checked={formData.type === 1}
+                    <Switch id="type" checked={formData.type === 1} 
                     onCheckedChange={(checked: boolean) => setFormData({ ...formData, type: checked ? 1 : 0 })}/>
                     <Label htmlFor="prescriptionRequired">Branded </Label>
                 </div>

@@ -161,75 +161,75 @@ export async function PrescriptionAIPowered (req, res) {
         // return res.status(200).json({scanned_id: scannedID, extractedText: parsed, RecognizedMeds: flatResults });
 
       const hardcodedResponse = {
-        // extractedText: {
-        //     Valid: false,
-        //     Error: "Invalid Input: No prescription detected."
-        // }
-        scanned_id: 2,
         extractedText: {
-            Valid: true,
-            RecognizedMeds: ["Lisinopril", "Metformin", "Atorvastatin"],
-            ExtractedText: {
-                PatientInfo: "Juan dela Cruz, DOB: 03/15/1980",
-                PrescriberName: "Dr. Maria Santos, M.D.",
-                PrescriberAddress: "123 Rizal Avenue, Makati City, Metro Manila, Philippines",
-                DateIssued: "03/21/2026",
-                Medications: [
-                    {
-                        Name: "Lisinopril",
-                        Dosage: "10mg",
-                        Instructions: "Take 1 tablet by mouth once daily in the morning",
-                        Quantity: "30 tablets",
-                        Refills: "3 refills"
-                    },
-                    {
-                        Name: "Metformin",
-                        Dosage: "500mg",
-                        Instructions: "Take 1 tablet by mouth twice daily with meals",
-                        Quantity: "60 tablets",
-                        Refills: "2 refills"
-                    },
-                    {
-                        Name: "Atorvastatin",
-                        Dosage: "20mg",
-                        Instructions: "Take 1 tablet by mouth once daily at bedtime",
-                        Quantity: "30 tablets",
-                        Refills: null
-                    }
-                ],
-                DEANumber: null,
-                LicenseNumber: "PRC-12345678",
-                AdditionalNotes: "Patient advised to monitor blood pressure and blood sugar levels regularly."
-            },
-            Accuracy: "low",
-            AccuracyLevel: 68
-        },
-        RecognizedMeds: [
-            {
-                id: 1,
-                name: "Lisinopril",
-                dosage: "10mg",
-                price: 150,
-                stock: 200,
-                manufacturer: "Unilab"
-            },
-            {
-                id: 2,
-                name: "Metformin",
-                dosage: "500mg",
-                price: 80,
-                stock: 350,
-                manufacturer: "Generika"
-            },
-            {
-                id: 3,
-                name: "Atorvastatin",
-                dosage: "20mg",
-                price: 220,
-                stock: 120,
-                manufacturer: "Pfizer"
-            }
-        ]
+            Valid: false,
+            Error: "Invalid Input: No prescription detected."
+        }
+        // scanned_id: 2,
+        // extractedText: {
+        //     Valid: true,
+        //     RecognizedMeds: ["Lisinopril", "Metformin", "Atorvastatin"],
+        //     ExtractedText: {
+        //         PatientInfo: "Juan dela Cruz, DOB: 03/15/1980",
+        //         PrescriberName: "Dr. Maria Santos, M.D.",
+        //         PrescriberAddress: "123 Rizal Avenue, Makati City, Metro Manila, Philippines",
+        //         DateIssued: "03/21/2026",
+        //         Medications: [
+        //             {
+        //                 Name: "Lisinopril",
+        //                 Dosage: "10mg",
+        //                 Instructions: "Take 1 tablet by mouth once daily in the morning",
+        //                 Quantity: "30 tablets",
+        //                 Refills: "3 refills"
+        //             },
+        //             {
+        //                 Name: "Metformin",
+        //                 Dosage: "500mg",
+        //                 Instructions: "Take 1 tablet by mouth twice daily with meals",
+        //                 Quantity: "60 tablets",
+        //                 Refills: "2 refills"
+        //             },
+        //             {
+        //                 Name: "Atorvastatin",
+        //                 Dosage: "20mg",
+        //                 Instructions: "Take 1 tablet by mouth once daily at bedtime",
+        //                 Quantity: "30 tablets",
+        //                 Refills: null
+        //             }
+        //         ],
+        //         DEANumber: null,
+        //         LicenseNumber: "PRC-12345678",
+        //         AdditionalNotes: "Patient advised to monitor blood pressure and blood sugar levels regularly."
+        //     },
+        //     Accuracy: "low",
+        //     AccuracyLevel: 68
+        // },
+        // RecognizedMeds: [
+        //     {
+        //         id: 1,
+        //         name: "Lisinopril",
+        //         dosage: "10mg",
+        //         price: 150,
+        //         stock: 200,
+        //         manufacturer: "Unilab"
+        //     },
+        //     {
+        //         id: 2,
+        //         name: "Metformin",
+        //         dosage: "500mg",
+        //         price: 80,
+        //         stock: 350,
+        //         manufacturer: "Generika"
+        //     },
+        //     {
+        //         id: 3,
+        //         name: "Atorvastatin",
+        //         dosage: "20mg",
+        //         price: 220,
+        //         stock: 120,
+        //         manufacturer: "Pfizer"
+        //     }
+        // ]
     };
 
     return res.status(200).json(hardcodedResponse);
@@ -321,42 +321,42 @@ export async function MedinceScannerAIPowered (req, res) {
         // return res.status(200).json({scanned_id: scannedID, extractedText: parsed, RecognizedMeds: flatResults });
 
       const hardcodedResponse = {
-        extractedText: {
-            Valid: false,
-            Error: "Invalid Input: No medicine label detected."
-        }
         // extractedText: {
-        //     Valid: true,
-        //     RecognizedMeds: ["Biogesic"],
-        //     ExtractedText: {
-        //         BrandName: "Biogesic",
-        //         GenericName: "Paracetamol",
-        //         DosageStrength: "500mg",
-        //         DosageForm: "Tablet",
-        //         Manufacturer: "Unilab Inc.",
-        //         ExpiryDate: "06/2027",
-        //         LotNumber: "LOT-2024-0872",
-        //         StorageInstructions: "Store below 30°C. Keep away from direct sunlight.",
-        //         Indications: "For relief of mild to moderate pain and fever.",
-        //         Warnings: "Do not exceed recommended dose. Keep out of reach of children.",
-        //         Dosage: "Adults: 1-2 tablets every 4-6 hours as needed.",
-        //         ActiveIngredients: ["Paracetamol 500mg"],
-        //         AdditionalNotes: null,
-        //     },
-        //     Accuracy: "very low",
-        //     AccuracyLevel: 70,
-        // },
-        // RecognizedMeds: [
-        //     {
-        //         id: 1,
-        //         name: "Biogesic",
-        //         dosage: "500mg Tablet",
-        //         price: 12.50,
-        //         stock: 150,
-        //         manufacturer: "Unilab Inc.",
-        //     },
-        // ],
-        //     message: undefined,
+        //     Valid: false,
+        //     Error: "Invalid Input: No medicine label detected."
+        // }
+        extractedText: {
+            Valid: true,
+            RecognizedMeds: ["Biogesic"],
+            ExtractedText: {
+                BrandName: "Biogesic",
+                GenericName: "Paracetamol",
+                DosageStrength: "500mg",
+                DosageForm: "Tablet",
+                Manufacturer: "Unilab Inc.",
+                ExpiryDate: "06/2027",
+                LotNumber: "LOT-2024-0872",
+                StorageInstructions: "Store below 30°C. Keep away from direct sunlight.",
+                Indications: "For relief of mild to moderate pain and fever.",
+                Warnings: "Do not exceed recommended dose. Keep out of reach of children.",
+                Dosage: "Adults: 1-2 tablets every 4-6 hours as needed.",
+                ActiveIngredients: ["Paracetamol 500mg"],
+                AdditionalNotes: null,
+            },
+            Accuracy: "very low",
+            AccuracyLevel: 70,
+        },
+        RecognizedMeds: [
+            {
+                id: 1,
+                name: "Biogesic",
+                dosage: "500mg Tablet",
+                price: 12.50,
+                stock: 150,
+                manufacturer: "Unilab Inc.",
+            },
+        ],
+            message: undefined,
         };
 
         return res.status(200).json(hardcodedResponse);

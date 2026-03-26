@@ -32,6 +32,7 @@ export const MedicationInventory = () => {
     const handleEdit = (product: Product) => {
         setIsDialogOpen(true)
         setEditingProduct(product);
+        console.log(product);
     };
 
     const confirmDelete = (product: Product) => {
@@ -132,7 +133,9 @@ export const MedicationInventory = () => {
         {isDialogOpen  && (
             <EditMedication 
             product={editingProduct} 
-            onClose={() => { setIsDialogOpen(false); setEditingProduct(null); }}/>
+            onClose={() => { setIsDialogOpen(false); setEditingProduct(null); }}
+            getActiveProducts={() => getActiveProducts()}
+            />
         )}
         {/* Delete Confirmation Dialog */}
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

@@ -41,6 +41,12 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }
 });
 
+const productUpload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: fileFilter,
+  limits: { fileSize: 10 * 1024 * 1024 }
+});
+
 
 router.get("/categories", getCategories);
 router.get("/activeCategories", getActiveCategory);
@@ -65,9 +71,9 @@ router.get("/admin/AllOrders", AllOrdersQeueueDisplay)
 router.post("/admin/delete/category/:category_id", categoryDelete)
 
 router.get("/admin/completedToday", fetchTotalCompletedToday)
-router.post("/admin/update/product", upload.single('image'), ProductUpdate);
+router.post("/admin/update/product", productUpload.single('image'), ProductUpdate);
 
-router.post("/admin/add/product", upload.single('image'), AddNewProduct);
+router.post("/admin/add/product", productUpload.single('image'), AddNewProduct);
 
 router.post("/admin/add/category", CategoryAdd);
 router.post("/admin/deactivate/product", ProductDeactivate)

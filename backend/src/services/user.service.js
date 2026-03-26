@@ -144,7 +144,7 @@ export const getTotalTotalDashboardPage = async() => {
 
 export const getAllProducts = async() => {
   const { rows } = await db.query(`SELECT p.id, p.name, p.category, p.dosage, p.prescriptionrequired,
-      p.manufacturer, p.barcode, p.price, p.stock, p.status, pd.type, pd.description,
+      p.manufacturer, p.barcode, p.price, p.stock, p.status, pd.type, pd.description, pd.image_url AS image, pd.public_id, 
       pd.active_ingredients, pd.side_effects, c.name as category_name FROM product p 
       JOIN categories c ON p.category = c.id LEFT JOIN product_description pd ON p.id = pd.product_id WHERE p.status = 1
        ORDER BY p.id DESC`);

@@ -2,10 +2,12 @@ import { API_URL } from "../url.api";
 import { Category, Product, ActivityLogProps, AIOverview } from "../Props";
 
 export const addData = async (endpoint: string, body: any, signal?: AbortSignal) => {
+  const isFormData = body instanceof FormData;
+
   const response = await fetch(endpoint, {
     method: "POST",
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body), 
+    headers: isFormData ? undefined : { 'Content-Type': 'application/json' },
+    body: isFormData ? body : JSON.stringify(body),
     signal,
   });
 
@@ -25,7 +27,7 @@ export const generateProductDetailsAI = async(product_name: string, signal?: Abo
 }
 
 
-export const addProduct = async(product: Partial<Product>) => {
+export const addProduct = async(product: FormData) => {
     return addData(`${API_URL}/api/admin/add/product`, product);
 }
 

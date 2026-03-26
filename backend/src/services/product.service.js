@@ -5,7 +5,6 @@ import bcrypt from "bcrypt";
 export const updateProduct = async(productData, image_url, public_id) => {
     const { id, name, dosage, prescriptionrequired, manufacturer, barcode, price, 
             stock, type, active_ingredients } = productData
-        console.log(productData);
         
     if (!id) throw new Error("Product ID is required");
 
@@ -41,7 +40,7 @@ export const updateProduct = async(productData, image_url, public_id) => {
 
     } catch (error) {
         await client.query("ROLLBACK");
-        throw error;
+        return { success: false, message: error }
 
     } finally {
         client.release();

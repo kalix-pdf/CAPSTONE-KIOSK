@@ -2,24 +2,26 @@ import { API_URL } from "../url.api";
 import { Product } from "../Props";
 
 export const updateData = async (endpoint: string, body?: any) => {
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body), 
-  });
+    const isFormData = body instanceof FormData;
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch: ${response.status}`);
-  }
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: isFormData ? undefined : { 'Content-Type': 'application/json' },
+      body: isFormData ? body : JSON.stringify(body),
+    });
 
-  return response.json();
+    if (!response.ok) {
+      throw new Error(`Failed to fetch: ${response.status}`);
+    }
+
+    return response.json();
 };
 
 export const DeactivateProduct = async (productId: number) => {
   return updateData(`${API_URL}/api/admin/deactivate/product`, { product_id: productId });
 };
 
-export const updateProduct = async (product: Partial<Product> & { id: number }) => {
+export const updateProduct = async (product: FormData) => {
   return updateData(`${API_URL}/api/admin/update/product`, product);
 };
 

@@ -11,6 +11,7 @@ export interface Product {
   id: number;
   name: string;
   image: string | File;
+  public_id: string;
   category: string;
   categoryid: number;
   dosage: string;

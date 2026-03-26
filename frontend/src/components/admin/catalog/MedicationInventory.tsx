@@ -32,7 +32,6 @@ export const MedicationInventory = () => {
     const handleEdit = (product: Product) => {
         setIsDialogOpen(true)
         setEditingProduct(product);
-        console.log(product);
     };
 
     const confirmDelete = (product: Product) => {

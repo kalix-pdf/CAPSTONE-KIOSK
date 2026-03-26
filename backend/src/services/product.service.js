@@ -77,10 +77,10 @@ export const addProduct = async(newProduct, image_url, public_id) => {
         const product_id = result.rows[0].id;
 
         if (product_id) {
-            const descriptionQuery = `INSERT INTO product_description(product_id, active_ingredients, type, image_url)
-                                     VALUES($1, $2, $3, 'placeholder.png')`;
+            const descriptionQuery = `INSERT INTO product_description(product_id, active_ingredients, type, image_url, public_id)
+                                     VALUES($1, $2, $3, $4, $5)`;
                 
-            const descriptionResult = await client.query(descriptionQuery, [product_id, active_ingredients, type]);
+            const descriptionResult = await client.query(descriptionQuery, [product_id, active_ingredients, type, image_url, public_id]);
             
             if (descriptionResult.rowCount === 0) {
                 await client.query("ROLLBACK");

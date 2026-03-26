@@ -11,8 +11,8 @@ export const ActivityLogs = () => {
     const [activityLogFilter, setActivityLogFilter] = useState<'added' | 'edited' | 'deleted'>('added');
     const [activityLogs, setActivityLogs] = useState<ActivityLogProps[] | null>(null);
     const [loading, setLoading] = useState(true);
-    const [selectedActivity, setSelectedActivity] = useState<ActivityLogProps | null>(null);
-    const [isActivityDetailOpen, setIsActivityDetailOpen] = useState(false);
+    // const [selectedActivity, setSelectedActivity] = useState<ActivityLogProps | null>(null);
+    // const [isActivityDetailOpen, setIsActivityDetailOpen] = useState(false);
 
     useEffect(() => {
         fetchActivityLogs()
@@ -64,8 +64,9 @@ export const ActivityLogs = () => {
                         return <RenderActivityLogCard
                             key={log.id}
                             log={log}
-                            setSelectedActivity={setSelectedActivity}
-                            setIsActivityDetailOpen={setIsActivityDetailOpen}/>
+                            // setSelectedActivity={setSelectedActivity}
+                            // setIsActivityDetailOpen={setIsActivityDetailOpen}
+                            />
                     })}
                     </div>
                     {filteredLogs?.length === 0 && (
@@ -101,8 +102,9 @@ export const ActivityLogs = () => {
                         return <RenderActivityLogCard
                             key={log.id}
                             log={log}
-                            setSelectedActivity={setSelectedActivity}
-                            setIsActivityDetailOpen={setIsActivityDetailOpen}/>
+                            // setSelectedActivity={setSelectedActivity}
+                            // setIsActivityDetailOpen={setIsActivityDetailOpen}
+                            />
                     })}
                     </div>
                     {filteredLogs?.length === 0 && (
@@ -138,8 +140,9 @@ export const ActivityLogs = () => {
                         return <RenderActivityLogCard
                             key={log.id}
                             log={log}
-                            setSelectedActivity={setSelectedActivity}
-                            setIsActivityDetailOpen={setIsActivityDetailOpen}/>
+                            // setSelectedActivity={setSelectedActivity}
+                            // setIsActivityDetailOpen={setIsActivityDetailOpen}
+                            />
                     })}
                     </div>
                     {filteredLogs?.length === 0 && (

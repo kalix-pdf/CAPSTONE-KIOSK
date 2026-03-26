@@ -1,4 +1,4 @@
-import { AlertCircle, Plus, Tag, Trash2 } from "lucide-react";
+import { AlertCircle, Edit2, Plus, Tag, Trash2 } from "lucide-react";
 import { Card, CardContent } from "../../ui/card";
 import { Button } from "../../ui/button";
 import { fetchCategories } from "../../../services/fetchData.api";
@@ -16,7 +16,9 @@ import { deleteCategory } from "../../../services/admin/updateData.api";
 
 export const Categories = () => {
     const [categories, setCategories] = useState<Category[]>([]);
+    const [editCategory, setCategoryEdit] = useState<number>();
     const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+    const [editDialog, setEditDialog] = useState(false);
     const [isDeleteCategoryDialogOpen, setIsDeleteCategoryDialogOpen] = useState(false);
     const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState("");
@@ -41,11 +43,18 @@ export const Categories = () => {
         toast.error("Please enter a category name");
         return;
       }
+      let result;
 
-      const result = await addNewCategory({name: newCategoryName, icon: getRandomIcon(), color: getRandomColor()});   
+      if (editCategory) {
+        result = await addNewCategory({name: newCategoryName, id: editCategory});   
+      } else {
+        result = await addNewCategory({name: newCategoryName, icon: getRandomIcon(), color: getRandomColor(), id: editCategory});   
+      }
+
       
       if (result.success) {
         toast.success(result.message);
+        getCategories();
 
       } else {
         toast.info(result.message);
@@ -57,6 +66,7 @@ export const Categories = () => {
       });
 
       setNewCategoryName("");
+      setCategoryEdit(0);
       setIsCategoryDialogOpen(false);
     };
 
@@ -137,6 +147,9 @@ export const Categories = () => {
                           {medicationCount} medication{medicationCount !== 1 ? 's' : ''}
                       </p>
                       </div>
+                      <Button size="sm" variant="ghost" onClick={() => { setEditDialog(true); setNewCategoryName(category.name); setCategoryEdit(category.id) }}>
+                          <Edit2 className="h-4 w-4" />
+                      </Button>
                       <Button size="sm" variant="ghost" onClick={() => confirmDeleteCategory(category)}
                           disabled={isInUse} className="text-red-600 hover:text-red-700 hover:bg-red-50" >
                           <Trash2 className="h-4 w-4" />
@@ -160,6 +173,38 @@ export const Categories = () => {
         )}
         </div>
         
+
+        {/* EDIT CATEGORY Name */}
+        <AlertDialog open={editDialog} onOpenChange={setEditDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Edit Category</AlertDialogTitle>
+            <AlertDialogDescription>
+              Edit Category Name
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {editCategory && (
+            <div className="my-4 p-4 bg-blue-50 border border-blue-500 rounded-lg">
+              <div className="space-y-2">
+                  <Label htmlFor="categoryName">Category Name</Label>
+                  <Input id="categoryName" value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleAddCategory();
+                      }
+                    }}
+                  />
+                </div>
+            </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setNewCategoryName(""); setCategoryEdit(0)}}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleAddCategory}
+              className="bg-blue-500 hover:bg-cyan-500"> Update </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+        </AlertDialog>
 
         {/* DELETE CATEG */}
         <AlertDialog open={isDeleteCategoryDialogOpen} onOpenChange={setIsDeleteCategoryDialogOpen}>
@@ -187,7 +232,7 @@ export const Categories = () => {
               className="bg-red-600 hover:bg-red-700"> Delete </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog>
+        </AlertDialog>
       </>
     );
 }

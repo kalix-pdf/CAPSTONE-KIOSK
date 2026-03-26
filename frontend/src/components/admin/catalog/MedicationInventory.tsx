@@ -100,7 +100,7 @@ export const MedicationInventory = () => {
                 <TableCell>{product.dosage}</TableCell>
                 <TableCell>₱{product.price.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                 <TableCell>
-                    <Badge variant={product.stock > 20 ? "default" : product.stock > 0 ? "secondary" : "destructive"}>
+                    <Badge variant={product.stock > 20 ? "default" : product.stock < 0 ? "destructive" : "destructive"}>
                     {product.stock} units
                     </Badge>
                 </TableCell>

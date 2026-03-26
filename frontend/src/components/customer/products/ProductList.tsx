@@ -27,6 +27,16 @@ export const ProductList = ({setSelectedCategoryId, selectedCategoryId}: Product
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [selectedCategoryId]);
+
+   const getImageSrc = (image: File | string | null): string => {
+        if (image instanceof File) {
+        return URL.createObjectURL(image);
+        }
+        if (typeof image === 'string') {
+        return image.replace("/upload/", "/upload/f_auto,q_auto/");
+        }
+        return '';
+    };
   
   return (
     <>
@@ -39,11 +49,11 @@ export const ProductList = ({setSelectedCategoryId, selectedCategoryId}: Product
 {          categoryProducts.map((product) => (
             <Card key={product.id} onClick={() => setSelectedProduct(product)} 
               className="cursor-pointer hover:shadow-lg transition-shadow shadow-md">
-              <CardImage src={`/images/${product.image_url}`} alt={product.name} />
+              <CardImage src={getImageSrc(product.image)} alt={product.name} />
 
               <CardContent className="flex-1 flex flex-col">
                 <CardHeader className="text-center">
-                  <CardTitle>{product.name} {product.dosage}</CardTitle>
+                  <CardTitle className="font-medium mt-8">{product.name} {product.dosage}</CardTitle>
                                
                 
                 </CardHeader>

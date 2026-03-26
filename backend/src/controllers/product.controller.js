@@ -8,16 +8,16 @@ export const ProductUpdate = async (req, res) => {
         let publicId;
 
         if (req.file) {
-            const { existingPublicId = "" } = req.body;
+            const { public_id = "" } = req.body;
 
-            if (existingPublicId) {
-                await deleteFromCloudinary(existingPublicId);
+            if (public_id) {
+                await deleteFromCloudinary(public_id);
             }
 
             const cloudinaryResult = await uploadToCloudinary(
                 req.file.buffer,
                 "events",
-                existingPublicId ?? null  
+                public_id ?? null  
             );
             imageUrl = cloudinaryResult.secure_url;
             publicId = cloudinaryResult.public_id;
@@ -33,13 +33,19 @@ export const ProductUpdate = async (req, res) => {
 
 export const AddNewProduct = async (req, res) => {
     try {
-        if (!req.file) return res.status(400).json({ message: "Image upload failed" });
-        
-        const cloudinaryResult = await uploadToCloudinary(req.file.buffer); 
-        const image = cloudinaryResult.secure_url;
-        const public_id = cloudinaryResult.public_id;
+        let image_url = "";
+        let public_id = ""
 
-        const result = await productService.addProduct(req.body, image, public_id);
+        if (req.file){
+            const cloudinaryResult = await uploadToCloudinary(req.file.buffer); 
+            image_url = cloudinaryResult.secure_url;
+            public_id = cloudinaryResult.public_id;
+        } else {
+            image_url = req.body.image;
+            public_id = req.body.public_id;
+        }
+
+        const result = await productService.addProduct(req.body, image_url, public_id);
         res.status(200).json(result);
 
     } catch (error) {

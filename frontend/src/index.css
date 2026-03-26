@@ -955,6 +955,10 @@
     height: calc(var(--spacing) * 32);
   }
 
+  .h-48 {
+    height: calc(var(--spacing) * 48);
+  }
+
   .h-\[1\.15rem\] {
     height: 1.15rem;
   }
@@ -1129,6 +1133,14 @@
 
   .w-36 {
     width: calc(var(--spacing) * 36);
+  }
+
+  .w-40 {
+    width: calc(var(--spacing) * 40);
+  }
+
+  .w-card-image {
+    width: calc(var(--spacing) * 74);
   }
 
   .w-50 {

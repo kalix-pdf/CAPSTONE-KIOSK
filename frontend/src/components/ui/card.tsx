@@ -95,7 +95,7 @@ const CardImage = React.forwardRef<HTMLImageElement, React.ComponentProps<"img">
       ref={ref}
       data-slot="card-image"
       className={cn(
-        "w-25 block mx-auto rounded-xl",
+        "h-48 block mx-auto rounded-xl",
         className
       )}
       {...props}

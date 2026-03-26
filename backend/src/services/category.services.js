@@ -2,7 +2,8 @@ import db from "../config/db.js";
 
 
 export const addNewCategory = async(categoryData) => {
-    const { icon, color, name } = categoryData;
+    const { icon, color, name, id } = categoryData;
+    console.log(categoryData);
 
     if (!name || name == "") {
         throw new Error("Category name is required!");
@@ -11,6 +12,17 @@ export const addNewCategory = async(categoryData) => {
     const client = await db.connect();
 
     try {
+        if (id > 0) {
+            const updateQuery = `UPDATE categories SET name = $1 WHERE id = $2`;
+            const resultUpdate = await db.query(updateQuery, [name, id]);
+
+            if (resultUpdate.rowCount === 0) {
+                return {success: false, message: "Something went wrong with server, please try again"};    
+            }
+
+            return {success: true, message: `Successfull edited ${name}`};
+        }
+
         const addCategoryQuery = `INSERT INTO categories(name, status, icon, color) 
                 VALUES($1, 1, $2, $3) RETURNING id, name`;
 

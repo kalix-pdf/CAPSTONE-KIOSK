@@ -18,7 +18,7 @@ export const getActiveCategories = async() => {
 
 export const getProductsByCategoryId = async (categoryId) => {
   const query = `SELECT p.id, p.name, p.price, p.dosage, p.prescriptionrequired, p.manufacturer, 
-                  pd.image_url, pd.type, pd.description, pd.side_effects, pd.active_ingredients, 
+                  pd.image_url, pd.type, pd.description, pd.side_effects, pd.active_ingredients, pd.image_url AS image, 
                   p.stock, p.barcode, c.id AS categoryId, c.name AS category 
                 FROM product p
                 JOIN categories c ON p.category = c.id
@@ -180,7 +180,7 @@ export const saveActivityLogs = async(ActivityLogsData) => {
 export const getActivityLogs = async() => {
   const queryActivityLogs = `SELECT a.*, p.name as product_name, c.name as category_name 
             FROM activity_logs a LEFT JOIN product p ON p.id = (a.metadata->>'productId')::int
-            LEFT JOIN categories c ON c.id = p.category`;
+            LEFT JOIN categories c ON c.id = p.category ORDER BY a.date DESC`;
   
   const { rows } = await db.query(queryActivityLogs);
 

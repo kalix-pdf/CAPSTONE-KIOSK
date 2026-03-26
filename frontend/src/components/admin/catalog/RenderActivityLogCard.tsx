@@ -5,11 +5,11 @@ import { ActivityLogProps } from "../../../services/Props";
 
 interface Props {
   log: ActivityLogProps;
-  setSelectedActivity: (log: ActivityLogProps) => void;
-  setIsActivityDetailOpen: (open: boolean) => void;
+  // setSelectedActivity: (log: ActivityLogProps) => void;
+  // setIsActivityDetailOpen: (open: boolean) => void;
 }
 
-export const RenderActivityLogCard = ({ log, setSelectedActivity, setIsActivityDetailOpen }: Props) => {
+export const RenderActivityLogCard = ({ log}: Props) => {
 
     const getLogIcon = () => {
       switch (log.type) {
@@ -90,7 +90,8 @@ export const RenderActivityLogCard = ({ log, setSelectedActivity, setIsActivityD
     return (
       <Card key={log.id} 
         className={`border-2 ${getLogColor()} cursor-pointer hover:shadow-md transition-shadow`}
-        onClick={() => { setSelectedActivity(log); setIsActivityDetailOpen(true);}}>
+        // onClick={() => { setSelectedActivity(log); setIsActivityDetailOpen(true);}}
+        >
 
         <CardContent className="p-4">
           <div className="flex items-start gap-3">

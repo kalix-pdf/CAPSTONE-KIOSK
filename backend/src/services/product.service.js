@@ -2,7 +2,7 @@ import db from "../config/db.js";
 import bcrypt from "bcrypt";
 
 
-export const updateProduct = async(productData) => {
+export const updateProduct = async(productData, image_url, public_id) => {
     const { id, name, dosage, prescriptionrequired, manufacturer, barcode, price, 
             stock, type, active_ingredients } = productData
         console.log(productData);
@@ -26,8 +26,8 @@ export const updateProduct = async(productData) => {
 
         if (id) {
             const descriptipQuery = `UPDATE product_description SET active_ingredients = $1, 
-                                    type = $2, image_url = 'placeholder.png' WHERE product_id = $3`;
-            const descriptionResult = await client.query(descriptipQuery, [active_ingredients, type, id]);
+                                    type = $2, image_url = $3, public_id = $4 WHERE product_id = $5`;
+            const descriptionResult = await client.query(descriptipQuery, [active_ingredients, type, image_url, public_id, id]);
         
             if (descriptionResult.rowCount === 0) {
                 await client.query("ROLLBACK");
@@ -49,7 +49,7 @@ export const updateProduct = async(productData) => {
     
 }
 
-export const addProduct = async(newProduct) => {
+export const addProduct = async(newProduct, image_url, public_id) => {
     const { name, dosage, prescriptionrequired, manufacturer, barcode, price, active_ingredients,
             stock, type  } = newProduct
 

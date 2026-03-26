@@ -65,8 +65,10 @@ router.get("/admin/AllOrders", AllOrdersQeueueDisplay)
 router.post("/admin/delete/category/:category_id", categoryDelete)
 
 router.get("/admin/completedToday", fetchTotalCompletedToday)
-router.post("/admin/update/product", ProductUpdate);
-router.post("/admin/add/product", AddNewProduct);
+router.post("/admin/update/product", upload.single('image'), ProductUpdate);
+
+router.post("/admin/add/product", upload.single('image'), AddNewProduct);
+
 router.post("/admin/add/category", CategoryAdd);
 router.post("/admin/deactivate/product", ProductDeactivate)
 router.post("/admin/update/order", OrderUpdate)

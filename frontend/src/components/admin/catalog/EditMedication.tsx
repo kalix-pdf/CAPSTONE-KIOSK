@@ -78,12 +78,23 @@ export const EditMedication = ( { product, onClose, getActiveProducts}: { produc
     
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        let image = formData.image;
+
+        if (image instanceof File) {
+            image = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(image as File);
+            });
+        }
+
     
         try {
             if (product?.id) {
                 const DetectedChanges = detectChanges(formData, product);
 
-                const result = await updateProduct({ ...formData, id: product.id });
+                const result = await updateProduct({ ...formData, id: product.id, image });
                 
                 addActivityLog(userId, 3, 'Product Edited', `${product.name} has been Edited`,
                 {
@@ -110,7 +121,7 @@ export const EditMedication = ( { product, onClose, getActiveProducts}: { produc
                 } 
             } 
             else {
-                const result = await addProduct(formData);
+                const result = await addProduct({ ...formData, image});
 
                 if (result.success) {
                     toast.success(result.message);

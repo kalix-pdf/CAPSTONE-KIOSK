@@ -189,3 +189,13 @@ export const AllOrdersQeueueDisplay = async(req, res) => {
         throw error;
     }
 }
+
+export const getOrders = async(req, res) => {
+    try {
+        const result = await userService.fetchOrders();
+        res.status(200).json(result);
+
+    } catch (error) {
+        throw error;
+    }
+}

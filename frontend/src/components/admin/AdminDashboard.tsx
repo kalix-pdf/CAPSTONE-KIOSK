@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Categories } from "./catalog/Categories";
 import { Toaster } from "sonner";
 import { useAuth } from "./AuthContext";
+import { CustomerOrder } from "./catalog/customerOrder";
 
 export function AdminDashboard() {
   const [totalCustomerOrder, setTotalCustomerOrder] = useState<number | null>(null);
@@ -90,10 +91,10 @@ export function AdminDashboard() {
               <TabsContent value="orders" className="space-y-4 mt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground">
                       View all customer orders placed through the kiosk
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-gray-500 mt-1">
                       Showing last {totalCustomerOrder} customer orders • Click to view details
                     </p>
                   </div>
@@ -102,7 +103,7 @@ export function AdminDashboard() {
                     {totalCustomerOrder} Orders
                   </Badge>
                 </div>
-
+                <CustomerOrder/>
                 
               </TabsContent>
             </Tabs>

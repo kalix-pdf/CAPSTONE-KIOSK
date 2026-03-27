@@ -283,3 +283,22 @@ export const updateOrder = async(req_body) => {
   }
 
 }
+
+export const fetchOrders = async() => {
+
+  const { rows } = await db.query(`SELECT o.id AS order_id, o.image_data_id, o.queue_number, o.created_at, o.total_amount, o.status,
+    JSON_AGG(JSON_BUILD_OBJECT(
+      'product_id', p.id,
+      'product_name', p.name, 
+      'dosage', p.dosage, 
+      'price', p.price, 
+      'manufacturer', p.manufacturer, 
+      'barcode', p.barcode,
+      'quantity', oi.quantity
+    ))AS products, SUM(oi.quantity) AS total_quantity
+    FROM orders o LEFT JOIN order_items oi ON oi.order_id = o.id 
+    LEFT JOIN product p ON p.id = oi.product_id WHERE o.status = 3 OR o.status = 4
+    GROUP BY o.id, oi.quantity`);
+
+    return rows;
+}

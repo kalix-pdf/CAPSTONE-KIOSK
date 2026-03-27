@@ -1,7 +1,7 @@
 import express from "express";
 import { getCategories, getProductsByCategory, createOrder, processOCRImage, adminLogin,
   fetchTotalDashboard, fetchAllProducts, addActivityLogs, fetchAllActivityLogs, fetchOrders, 
-  fetchTotalCompletedToday, OrderUpdate, AllOrdersQeueueDisplay, getActiveCategory } 
+  fetchTotalCompletedToday, OrderUpdate, AllOrdersQeueueDisplay, getActiveCategory, getOrders } 
 from "../controllers/user.controller.js";
 import { ProductUpdate, AddNewProduct, ProductDeactivate } from "../controllers/product.controller.js";
 import { CategoryAdd, categoryDelete } from "../controllers/category.controller.js";
@@ -67,6 +67,7 @@ router.get("/admin/ActivityLogs", fetchAllActivityLogs);
 
 router.get("/admin/orders", fetchOrders)
 router.get("/admin/AllOrders", AllOrdersQeueueDisplay)
+router.get("/admin/fetch/orders", getOrders);
 
 router.post("/admin/delete/category/:category_id", categoryDelete)
 
@@ -82,27 +83,5 @@ router.post("/admin/update/order", OrderUpdate)
 //Generative AI
 router.post("/generate/product/details", AIPoweredProductDetails);
 
-// const clients = new Set();
-
-// router.get('/queue/stream', (req, res) => {
-//   res.setHeader('Content-Type', 'text/event-stream');
-//   res.setHeader('Cache-Control', 'no-cache');
-//   res.setHeader('Connection', 'keep-alive');
-//   res.flushHeaders();
-
-//   const heartbeat = setInterval(() => res.write(': ping\n\n'), 30000);
-
-//   clients.add(res);
-
-//   req.on('close', () => {
-//     clearInterval(heartbeat);
-//     clients.delete(res);
-//   });
-// });
-
-// export function broadcastQueueUpdate(data) {
-//   const payload = `data: ${JSON.stringify(data)}\n\n`;
-//   clients.forEach(client => client.write(payload));
-// }
 
 export default router;

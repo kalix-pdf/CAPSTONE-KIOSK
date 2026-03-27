@@ -141,3 +141,22 @@ export interface AIResponse {
   scanned_id: number;
 }
 
+//customer order
+export interface customerOrderProps {
+  order_id: number;
+  image_data_id?: number | null;
+  queue_number: number;
+  created_at: string;
+  total_amount: number;
+  status: number;
+  total_quantity: number;
+  products: {
+    quantity: number;
+    product_id: number;
+    product_name: string;
+    dosage: string;
+    price: number;
+    manufacturer: string;
+    barcode: number
+  }[]
+}

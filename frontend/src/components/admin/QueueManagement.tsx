@@ -347,7 +347,7 @@ export function QueueManagement({ orders, completedToday, waitingQueue}  : Queue
                       <Card>
                         <CardContent className="p-6">
                           <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center min-h-[400px]">
-                            <img src={`http://localhost:5000${prescriptiondata.image_url.replace(/\\/g, "/")}`} />
+                            <img src={`http://localhost:5000/${prescriptiondata.image_url.replace(/\\/g, "/")}`} />
                               {/* alt="Scanned Prescription" className="max-w-full max-h-[500px] rounded shadow-lg" /> */}
                           </div>
                         </CardContent>

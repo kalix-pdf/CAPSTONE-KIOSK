@@ -75,13 +75,13 @@ export async function AIPoweredProductDetails (req, res) {
 
 
 export async function PrescriptionAIPowered (req, res) {
-    // const filePath = req.file.path;
+    const filePath = req.file.path;
 
     // const base64ImageFile = fs.readFileSync(filePath, {
     //     encoding: "base64",
     // });
 
-    // const scannedID = await saveOCRImage(filePath, 0);
+    const scannedID = await saveOCRImage(filePath, 0);
 
     try {
         // const prompt = `You are a highly trained medical and pharmaceutical document analyst with expertise in verifying prescription authenticity.
@@ -161,75 +161,67 @@ export async function PrescriptionAIPowered (req, res) {
         // return res.status(200).json({scanned_id: scannedID, extractedText: parsed, RecognizedMeds: flatResults });
 
       const hardcodedResponse = {
-        extractedText: {
-            Valid: false,
-            Error: "Invalid Input: No prescription detected."
-        }
-        // scanned_id: 2,
         // extractedText: {
-        //     Valid: true,
-        //     RecognizedMeds: ["Lisinopril", "Metformin", "Atorvastatin"],
-        //     ExtractedText: {
-        //         PatientInfo: "Juan dela Cruz, DOB: 03/15/1980",
-        //         PrescriberName: "Dr. Maria Santos, M.D.",
-        //         PrescriberAddress: "123 Rizal Avenue, Makati City, Metro Manila, Philippines",
-        //         DateIssued: "03/21/2026",
-        //         Medications: [
-        //             {
-        //                 Name: "Lisinopril",
-        //                 Dosage: "10mg",
-        //                 Instructions: "Take 1 tablet by mouth once daily in the morning",
-        //                 Quantity: "30 tablets",
-        //                 Refills: "3 refills"
-        //             },
-        //             {
-        //                 Name: "Metformin",
-        //                 Dosage: "500mg",
-        //                 Instructions: "Take 1 tablet by mouth twice daily with meals",
-        //                 Quantity: "60 tablets",
-        //                 Refills: "2 refills"
-        //             },
-        //             {
-        //                 Name: "Atorvastatin",
-        //                 Dosage: "20mg",
-        //                 Instructions: "Take 1 tablet by mouth once daily at bedtime",
-        //                 Quantity: "30 tablets",
-        //                 Refills: null
-        //             }
-        //         ],
-        //         DEANumber: null,
-        //         LicenseNumber: "PRC-12345678",
-        //         AdditionalNotes: "Patient advised to monitor blood pressure and blood sugar levels regularly."
-        //     },
-        //     Accuracy: "low",
-        //     AccuracyLevel: 68
-        // },
-        // RecognizedMeds: [
-        //     {
-        //         id: 1,
-        //         name: "Lisinopril",
-        //         dosage: "10mg",
-        //         price: 150,
-        //         stock: 200,
-        //         manufacturer: "Unilab"
-        //     },
-        //     {
-        //         id: 2,
-        //         name: "Metformin",
-        //         dosage: "500mg",
-        //         price: 80,
-        //         stock: 350,
-        //         manufacturer: "Generika"
-        //     },
-        //     {
-        //         id: 3,
-        //         name: "Atorvastatin",
-        //         dosage: "20mg",
-        //         price: 220,
-        //         stock: 120,
-        //         manufacturer: "Pfizer"
-        //     }
-        // ]
+        //     Valid: false,
+        //     Error: "Invalid Input: No prescription detected."
+        // }
+        scanned_id: scannedID,
+        extractedText: {
+            Valid: true,
+            RecognizedMeds: ["Lisinopril", "Metformin", "Atorvastatin"],
+            ExtractedText: {
+                PatientInfo: "Juan dela Cruz, DOB: 03/15/1980",
+                PrescriberName: "Dr. Maria Santos, M.D.",
+                PrescriberAddress: "123 Rizal Avenue, Makati City, Metro Manila, Philippines",
+                DateIssued: "03/21/2026",
+                Medications: [
+                    {
+                        Name: "Paracetamo Bigogesic",
+                        Dosage: "10mg",
+                        Instructions: "Take 1 tablet by mouth once daily in the morning",
+                        Quantity: "30 tablets",
+                        Refills: "3 refills"
+                    },
+                    {
+                        Name: "Bioflu",
+                        Dosage: "500mg",
+                        Instructions: "Take 1 tablet by mouth twice daily with meals",
+                        Quantity: "60 tablets",
+                        Refills: "2 refills"
+                    },
+                    {
+                        Name: "Atorvastatin",
+                        Dosage: "20mg",
+                        Instructions: "Take 1 tablet by mouth once daily at bedtime",
+                        Quantity: "30 tablets",
+                        Refills: null
+                    }
+                ],
+                DEANumber: null,
+                LicenseNumber: "PRC-12345678",
+                AdditionalNotes: "Patient advised to monitor blood pressure and blood sugar levels regularly."
+            },
+            Accuracy: "low",
+            AccuracyLevel: 68
+        },
+        RecognizedMeds: [
+            {
+                id: 3,
+                name: "Paracetamol Biogesics",
+                dosage: "10mg",
+                price: 10,
+                stock: 100,
+                manufacturer: "Unilab"
+            },
+            {
+                id: 7,
+                name: "Bioflu",
+                dosage: "500mg",
+                price: 90,
+                stock: 100,
+                manufacturer: "Generika"
+            },
+        ]
     };
 
     return res.status(200).json(hardcodedResponse);
@@ -262,7 +254,6 @@ export async function MedinceScannerAIPowered (req, res) {
         //     - Dosage strength (e.g., 500mg, 10mg/5ml)
         //     - Dosage form (tablet, capsule, syrup, injection, etc.)
         //     - Manufacturer or distributor name
-        //     - Lot/batch number or expiry date
         //     If the image does NOT appear to be a medicine label or packaging (e.g., it's a food label, ID card, prescription slip, blank page, unrelated document, random photo, screenshot, etc.), respond ONLY with this exact JSON and nothing else:
         //     {
         //     "Valid": false,

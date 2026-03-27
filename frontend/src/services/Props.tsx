@@ -140,3 +140,4 @@ export interface AIResponse {
   message?: string;
   scanned_id: number;
 }
+

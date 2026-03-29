@@ -127,8 +127,8 @@ export const deactivateProduct = async(reqbody) => {
 // Loop through each recognized med and query individually
 export const getProduct = async (product_name) => {
     try {
-        const search = `SELECT id, name, dosage, price, stock, manufacturer 
-            FROM product WHERE name ILIKE $1`;
+        const search = `SELECT p.id, p.name, p.dosage, p.price, p.stock, p.manufacturer, pd.type, p.prescriptionrequired
+            FROM product p JOIN product_description pd ON p.id = pd.product_id WHERE p.name ILIKE $1`;
 
         const { rows } = await db.query(search, [`%${product_name}%`]); 
         return rows;

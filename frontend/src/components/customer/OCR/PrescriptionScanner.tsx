@@ -149,7 +149,7 @@ export function PrescriptionScanner({ open, onBrowser, onOpenChange }: Prescript
         <DialogDescription>
           {scanningStatus === "camera"
             ? "Position your prescription clearly in the frame"
-            : "Use your camera to scan the prescription"}
+            : "Press the start scan to start scanning"}
         </DialogDescription>
       </DialogHeader>
  
@@ -162,10 +162,11 @@ export function PrescriptionScanner({ open, onBrowser, onOpenChange }: Prescript
               <div className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-800 rounded-lg p-12 text-center">
                 <Scan className="h-32 w-32 mx-auto text-green-900 mb-6" />
                 <h3 className="text-green-900 font-semibold mb-3">Scanner Ready</h3>
-                <p className="font-semibold mb-6">Place your written prescription on the scanner bed</p>
+                <p className="font-semibold">Place your written prescription on the scanner bed</p>
+                <p className="font-semibold mb-6">Ilagay ang iyong Reseta sa ibabaw ng Scanner bed</p>
                 <div className="flex flex-col gap-2 items-center">
                   <Button size="lg" className="w-fit" onClick={handleStartScan}>
-                    <Scan className="h-5 w-5 mr-2" /> Start Scanning
+                    <Scan className="h-5 w-5 mr-2" /> Start Scanning / Simulan ang pag-isKan
                   </Button>
                   <DialogClose asChild>
                     <Button
@@ -185,6 +186,7 @@ export function PrescriptionScanner({ open, onBrowser, onOpenChange }: Prescript
             {scanningStatus === "camera" && (
               <div>
                 <div className="w-full overflow-hidden border-2 border-lumot-900 rounded-lg">
+                  {/* <p className="absolute mt-">Click the capture photo</p> */}
                   <video ref={videoRef} autoPlay playsInline muted className="w-full h-[400px] object-contain" />
                   <div
                     className="absolute border-4 border-green-500"
@@ -225,12 +227,21 @@ export function PrescriptionScanner({ open, onBrowser, onOpenChange }: Prescript
  
             {/* Info footer */}
             <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg">
-              <p className="text-gray-700 flex items-start gap-2 text-sm">
-                <span className="text-blue-600">ℹ️</span>
-                <span>
-                  Make sure the prescription is clearly visible and not folded. The system will
-                  automatically extract medication names, dosages, and instructions.
-                </span>
+              <p className="flex flex-col items-start gap-2 text-sm">
+                <div>
+                  <span className="text-blue-600 mr-3">ℹ️</span>
+                  <span>
+                    Siguraduhin na malinaw at hindi gusot gusot and reseta. Ang system ay automatikong
+                    babasahin ito
+                  </span>
+                </div>
+                <div>
+                  <span className="text-blue-600m mr-3">ℹ️</span>
+                  <span>
+                    Make sure the prescription is clearly visible and not folded. The system will
+                    automatically extract medication names, dosages, and instructions.
+                  </span>
+                </div>
               </p>
             </div>
           </div>

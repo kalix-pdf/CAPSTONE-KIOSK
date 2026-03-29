@@ -30,7 +30,6 @@ export function MedicineScannerModal({ open, onOpenChange, onBrowse }: MedicineS
   const [error, setError] = useState<string>('');
   const { addToCart, setExtractedText, getTotalItems } = useCart();
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [accuracy, setAccuracy] = useState<number | 0>(0);
   
   useEffect(() => {
     if (open) {
@@ -47,15 +46,11 @@ export function MedicineScannerModal({ open, onOpenChange, onBrowse }: MedicineS
         toast.info("Document captured, processing with OCR...");
   
         try {
-          // const result = await uploadAndProcessImage(blob, '2');
           const AIOCR = await AIPoweredOCRMedicine(blob);
-
+          
           if (AIOCR) {
             setAIResponse(AIOCR);
             setExtractedText(AIOCR.extractedText);
-
-            const AccuracyLevel = Number(AIResponse?.extractedText.AccuracyLevel)
-            setAccuracy(AccuracyLevel);
 
             const matchedProduct = Array.isArray(AIOCR.RecognizedMeds) 
               ? AIOCR.RecognizedMeds[0] ?? null 
@@ -188,10 +183,11 @@ export function MedicineScannerModal({ open, onOpenChange, onBrowse }: MedicineS
                   <div className="bg-gradient-to-br from-lightgreen-50 to-lightgreen-100 border-2 border-lightgreen-300 rounded-lg p-12 text-center">
                     <Scan className="h-32 w-32 mx-auto text-lightgreen-300 mb-6" />
                     <h3 className="text-lightgreen-300 font-semibold mb-3">Scanner Ready</h3>
-                    <p className="font-semibold mb-6">Place your Medicine Packaging or Label on the Scanner Bed</p>
+                    <p className="font-semibold">Place your Medicine Packaging or Label on the Scanner Bed</p>
+                    <p className="font-semibold mb-6">Ilagay ang pakete ng Gamot sa ibabaw ng scanner bed</p>
                     <div className="flex flex-col gap-2 items-center">
                       <Button size="lg" className="w-fit flex-none" onClick={handleStartScan}>
-                        <Scan className="h-5 w-5 mr-2" /> Start Scanning </Button>
+                        <Scan className="h-5 w-5 mr-2" /> Start Scanning / Simulan ang pag-isKan </Button>
                       <DialogClose asChild>
                         <Button size="default" onClick={() => {
                           if (getTotalItems() > 0) {
@@ -244,10 +240,22 @@ export function MedicineScannerModal({ open, onOpenChange, onBrowse }: MedicineS
                 )}
 
                 <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg">
-                  <p className="text-gray-700 flex items-start gap-2">
-                    <span className="text-blue-600">ℹ️</span>
-                    <span>Make sure the prescription is clearly visible and not folded. The system will automatically extract medication names, dosages, and instructions.</span>
-                  </p>
+                  <div className="flex flex-col items-start gap-2 text-sm">
+                    <div>
+                      <span className="text-blue-600 mr-3">ℹ️</span>
+                      <span>
+                        Siguraduhin na malinaw at nababasa ang pakete ng gamot. Ang system ay automatikong
+                        babasahin ito
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-blue-600m mr-3">ℹ️</span>
+                      <span>
+                        Make sure the medicine label or packaging is clearly visible and not folded. The system will
+                        automatically extract the medicine information.
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
           )}
@@ -333,22 +341,20 @@ export function MedicineScannerModal({ open, onOpenChange, onBrowse }: MedicineS
                         </div>
                       )}
                       <div className="rounded-lg border bg-card p-4">
-                        <AccuracyBar level={accuracy ?? 0} />
+                        <AccuracyBar level={AIResponse?.extractedText?.AccuracyLevel ?? 0} />
                       </div>
                       <div className={`flex gap-3 items-start p-3 rounded-lg border text-sm ${
-                          accuracy < 70
+                          (AIResponse?.extractedText?.AccuracyLevel ?? 0) < 70
                             ? "bg-red-50 border-red-200 text-red-900"
                             : "bg-amber-50 border-amber-200 text-amber-900"
                         }`}>
                         <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
                         <div>
-                          <p className="font-medium">
-                            {accuracy <= 70 ? "Pharmacist review strongly recommended" : "Pharmacist verification required"}
-                          </p>
                           <p className="text-sm mt-0.5 opacity-80">
-                            {accuracy < 80
-                              ? `Confidence is ${AIResponse.extractedText.Accuracy}% — below the 75% threshold. A pharmacist must manually verify the original prescription.`
-                              : "A licensed pharmacist must confirm this Medicine before dispensing any medication."}
+                            {(AIResponse?.extractedText?.AccuracyLevel ?? 0) <= 70
+                              ? `Confidence is ${AIResponse.extractedText.Accuracy}% — below the 75% threshold. A pharmacist must manually verify the original prescription.
+                              Ang kompyansa ng system ay mababa sa 75%. Kailangan ng pharmacist na manu-manong beripikahin ang orihinal na reseta.`
+                              : "A licensed pharmacist must confirm this Medicine before dispensing any medication. Isang lisensyadong pharmacist ang dapat mag-confirm ng gamot na ito bago ito ma-dispense."}
                           </p>
                         </div>
                       </div>

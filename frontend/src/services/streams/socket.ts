@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { WEBSOCKET_URL } from "../url.api";
 
 type SocketEvent = {
   event: string;
@@ -10,7 +11,7 @@ type EventHandlers = {
   [event: string]: (data: any) => void;
 };
 
-const WS_URL = 'ws://localhost:5000/';
+const WS_URL = WEBSOCKET_URL;
 
 export const useAdminSocket = (handlers: EventHandlers) => {
   const ws = useRef<WebSocket | null>(null);

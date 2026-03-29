@@ -6,11 +6,13 @@ import { Badge } from "../../ui/badge";
 import { CartItem, useCart } from "../cart/GlobalCart";
 import { AIOverview } from "../../../services/Props";
 import { generateProductDetailsAI } from "../../../services/admin/addData.api";
+import { PrescriptionScanner } from "../OCR/PrescriptionScanner";
 
 export const ProductDetails = ({ selectedProduct, setSelectedProduct }: any) => {
     const [aiLoading, setAiLoading] = useState(false);
     const [aiInfo, setAiInfo] = useState<AIOverview>();
     const { addToCart } = useCart(); 
+    const [showPrescriptionScanner, setShowPrescriptionScanner] = useState(false);
     const abortControllerRef = useRef<AbortController | null>(null);
 
     const handleAdd = (selectedProduct: CartItem) => {
@@ -20,22 +22,22 @@ export const ProductDetails = ({ selectedProduct, setSelectedProduct }: any) => 
     const fetchAIInfo = async () => {
         if (!selectedProduct?.name) return;
 
-        abortControllerRef.current?.abort();
-        abortControllerRef.current = new AbortController();
+        // abortControllerRef.current?.abort();
+        // abortControllerRef.current = new AbortController();
 
-        try {
-            setAiLoading(true);
-            const result = await generateProductDetailsAI(
-                selectedProduct.name,
-                abortControllerRef.current.signal 
-            );
-            setAiInfo(result);
-        } catch (error: any) {
-            if (error.name === 'AbortError') return;
-            console.error('Failed to fetch AI info:', error);
-        } finally {
-            setAiLoading(false);
-        }
+        // try {
+        //     setAiLoading(true);
+        //     const result = await generateProductDetailsAI(
+        //         selectedProduct.name,
+        //         abortControllerRef.current.signal 
+        //     );
+        //     setAiInfo(result);
+        // } catch (error: any) {
+        //     if (error.name === 'AbortError') return;
+        //     console.error('Failed to fetch AI info:', error);
+        // } finally {
+        //     setAiLoading(false);
+        // }
     };
 
     useEffect(() => {
@@ -111,13 +113,13 @@ export const ProductDetails = ({ selectedProduct, setSelectedProduct }: any) => 
                                 }`}> {selectedProduct.type === 1 ? "Branded" : "Generic"} </Badge>
                             </div>
 
-                            <div className="bg-yellow-50 border-2 border-yellow-300 p-4 rounded-lg">
+                            {/* <div className="bg-yellow-50 border-2 border-yellow-300 p-4 rounded-lg">
                                 <p className="text-yellow-900 mb-2 text-lg font-bold flex items-center gap-2">
                                 <AlertTriangle className="h-5 w-5" />
                                 Side Effects & Warnings
                                 </p>
                                 <p className="text-black-800 text-sm font-semibold leading-relaxed">{selectedProduct.side_effects}</p>
-                            </div>
+                            </div> */}
 
                             {selectedProduct.prescriptionrequired === 1 && (
                                 <div className="bg-red-50 border-2 border-red-300 p-4 rounded-lg">
@@ -169,6 +171,13 @@ export const ProductDetails = ({ selectedProduct, setSelectedProduct }: any) => 
                                 </>
                                 )}
                             </Button>
+                            {selectedProduct.prescriptionrequired === 1 && (
+                                <Button className="w-full text-base py-6 rounded-lg hover:scale-105 transition-all font-bold shadow-lg"
+                                onClick={() => setShowPrescriptionScanner(true)}>
+                                    <Info className="h-4 w-4" />
+                                    Use Prescription Scanner instead / Gamitin ang Prescription Scanner
+                                </Button>
+                            )}
                             </div>
                         </div>
 
@@ -334,6 +343,13 @@ export const ProductDetails = ({ selectedProduct, setSelectedProduct }: any) => 
                             </div>
                         </div>
                     </div>
+                    <PrescriptionScanner
+                        open={showPrescriptionScanner}
+                        onOpenChange={setShowPrescriptionScanner}
+                        onBrowser={() => {
+                            setShowPrescriptionScanner(false);
+                        }}
+                        />
                     </>
                 )}
             </DialogContent>

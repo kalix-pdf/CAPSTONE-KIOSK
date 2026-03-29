@@ -118,7 +118,7 @@ export async function PrescriptionAIPowered (req, res) {
         //             {
         //                 "Name": "medication name",
         //                 "Dosage": "dosage if visible, else null",
-        //                 "Instructions": "sig/directions if visible, else null",
+        //                 "Instructions": "sig/directions if visible, provide english and tagalog translation, else null",
         //                 "Quantity": "number of tablets or units if visible, else null",
         //                 "Refills": "refill information if visible, else null"
         //             }
@@ -207,11 +207,23 @@ export async function PrescriptionAIPowered (req, res) {
         RecognizedMeds: [
             {
                 id: 3,
-                name: "Paracetamol Biogesics",
+                name: "Paracetamol",
                 dosage: "10mg",
                 price: 10,
                 stock: 100,
-                manufacturer: "Unilab"
+                manufacturer: "Unilab",
+                type: 0,
+                prescriptionrequired: 0
+            },
+            {
+                id: 2,
+                name: "Paracetamol",
+                dosage: "10mg",
+                price: 10,
+                stock: 100,
+                manufacturer: "Biogesic",
+                type: 1,
+                prescriptionrequired: 0
             },
             {
                 id: 7,
@@ -219,6 +231,8 @@ export async function PrescriptionAIPowered (req, res) {
                 dosage: "500mg",
                 price: 90,
                 stock: 100,
+                type: 0,
+                prescriptionrequired: 1,
                 manufacturer: "Generika"
             },
         ]
@@ -340,7 +354,7 @@ export async function MedinceScannerAIPowered (req, res) {
         RecognizedMeds: [
             {
                 id: 1,
-                name: "Biogesic",
+                name: "Paracetamol",
                 dosage: "500mg Tablet",
                 price: 12.50,
                 stock: 150,

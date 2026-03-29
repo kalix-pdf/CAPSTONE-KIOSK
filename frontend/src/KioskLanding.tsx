@@ -337,7 +337,7 @@ const GLOBAL_STYLES = `
   }
 
   .card-icon-wrap {
-    width: 64px; height: 64px;
+    width: 64px; height: 60px;
     border-radius: 16px;
     display: flex; align-items: center; justify-content: center;
     position: relative;
@@ -466,6 +466,7 @@ function ActionCard({
   icon,
   iconBg,
   title,
+  tagalog,
   description,
   onClick,
   animDelay = 0,
@@ -473,6 +474,7 @@ function ActionCard({
   icon: React.ReactNode;
   iconBg: string;
   title: string;
+  tagalog: string;
   description: string;
   onClick: () => void;
   animDelay?: number;
@@ -484,16 +486,14 @@ function ActionCard({
   }, [animDelay]);
 
   return (
-    <div
-      className={`action-card${visible ? " visible" : ""}`}
-      style={{ animationDelay: `${animDelay}ms` }}
-      onClick={onClick}
-    >
+    <div className={`action-card${visible ? " visible" : ""}`}
+      style={{ animationDelay: `${animDelay}ms` }} onClick={onClick} >
       <div className="card-icon-wrap" style={{ background: iconBg }}>
         {icon}
       </div>
       <div>
-        <div className="card-title">{title}</div>
+        <div className="card-title">{tagalog}</div>
+        <div>{title}</div>
         <div className="card-desc" style={{ marginTop: 6 }}>{description}</div>
       </div>
       <div className="card-arrow">Tap to start →</div>
@@ -566,7 +566,8 @@ export default function KioskLanding({ onEnterBrowse }: KioskLandingProps) {
               icon={<FileText size={26} color="#86fff9" />}
               iconBg="linear-gradient(135deg, oklch(60.59% 0.10198 199.112), #013a37)"
               title="Scan Prescription"
-              description="Upload or scan your doctor's prescription"
+              tagalog="Is-kan ang Reseta"
+              description="scan your doctor's prescription"
               onClick={() => setShowPrescriptionScanner(true)}
               animDelay={100}
             />
@@ -574,7 +575,8 @@ export default function KioskLanding({ onEnterBrowse }: KioskLandingProps) {
               icon={<Scan size={26} color="#86fff9" />}
               iconBg="linear-gradient(135deg, #0a4f4c, #013a37)"
               title="Scan Medicine"
-              description="Scan a medicine label or packaging to search"
+              tagalog="Is-kan ang Gamot"
+              description="Scan a medicine label or packaging"
               onClick={() => setShowMedicineScanner(true)}
               animDelay={220}
             />
@@ -582,6 +584,7 @@ export default function KioskLanding({ onEnterBrowse }: KioskLandingProps) {
               icon={<LayoutGrid size={26} color="#86fff9" />}
               iconBg="linear-gradient(135deg, #05302e, #013a37)"
               title="Browse Catalogue"
+              tagalog="Maghanap ng Gamot"
               description="Explore our full medicine catalogue"
               onClick={onEnterBrowse}
               animDelay={340}

@@ -138,12 +138,13 @@ function ValidResultView({ AIResponse, recognizedMeds, onReset, onConfirm }: {
         <div>
           <p className="font-medium text-sm">Valid prescription detected</p>
           <p className="text-base mt-0.5 opacity-80">Review the extracted information below before adding to cart.</p>
+          <p className="text-base mt-0.5 opacity-80">I-Review ang na-iskan na reseta bago i-add to cart</p>
         </div>
       </div>
  
       {/* Prescription details */}
       <div className="rounded-lg border bg-card p-4">
-        <SectionLabel>Prescription details</SectionLabel>
+        <SectionLabel>Prescription details / Detalye ng Reseta</SectionLabel>
         <InfoRow label="Patient" value={extracted.ExtractedText?.PatientInfo} />
         <InfoRow label="Prescriber" value={extracted.ExtractedText?.PrescriberName} />
         <InfoRow label="Clinic address" value={extracted.ExtractedText?.PrescriberAddress} />
@@ -159,7 +160,7 @@ function ValidResultView({ AIResponse, recognizedMeds, onReset, onConfirm }: {
       {(extracted.ExtractedText?.Medications?.length ?? 0) > 0 && (
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between mb-3">
-            <SectionLabel>Medications on prescription</SectionLabel>
+            <SectionLabel>Medications on prescription / Na-Iskan na gamot sa Reseta</SectionLabel>
             <Badge variant="secondary">{extracted.ExtractedText!.Medications.length} item(s)</Badge>
           </div>
           <div className="space-y-2">
@@ -179,12 +180,14 @@ function ValidResultView({ AIResponse, recognizedMeds, onReset, onConfirm }: {
  
       {/* Matched products */}
       <div className="rounded-lg border bg-card p-4">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-1">
           <SectionLabel>Available in pharmacy</SectionLabel>
           <Badge variant={recognizedMeds.length > 0 ? "secondary" : "outline"}>
             {recognizedMeds.length} matched
           </Badge>
         </div>
+        <p className="text-sm text-muted-foreground">You can modify / change the branded or generic medicine in cart</p>
+        <p className="text-sm text-muted-foreground mb-3">Maaari mong baguhin ang branded o generic, dagdagan, alisin ang gamot sa cart section</p>
  
         {recognizedMeds.length > 0 ? (
           <div className="divide-y divide-border">
@@ -194,11 +197,14 @@ function ValidResultView({ AIResponse, recognizedMeds, onReset, onConfirm }: {
                   <Check className="h-3.5 w-3.5 text-green-700" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-base font-medium truncate">{med.name}</p>
+                  <p className="text-base font-medium truncate">{med.name} {med.manufacturer}</p>
                   <p className="text-sm text-muted-foreground">{med.dosage}</p>
                   <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                    <Badge variant={med.type === 1 ? "secondary" : "destructive"} className="text-[10px] p-2 bg-red-50 text-red-700 border-red-300">
+                      {med.type === 1 ? "Branded" : "Generic"}
+                    </Badge>
                     <Badge variant="outline" className="text-[10px] p-2 bg-red-50 text-red-700 border-red-300">
-                      Rx required
+                      {med.prescriptionrequired === 1 ? "Rx required" : "OTC Medicine"}
                     </Badge>
                     <Badge variant={med.stock > 0 ? "secondary" : "destructive"}
                       className="text-[10px] p-2" >
@@ -246,6 +252,13 @@ function ValidResultView({ AIResponse, recognizedMeds, onReset, onConfirm }: {
               ? `Confidence is ${level}% — below the 75% threshold. A pharmacist must manually verify the original prescription.`
               : "A licensed pharmacist must confirm this prescription before dispensing any medication."}
           </p>
+          <hr className="py-2"/>
+          <p className="text-sm mt-0.5 opacity-80">
+            {isLowAccuracy
+              ? "Mababa ang konpidensya ng system sa na-iskan na reseta. Manual checking ng pharmasya ay kinakailangan."
+              : "Mataas ang konpidensya ng system, maari pa rin itong i-verify ng pharmasya"}
+          </p>
+          
         </div>
       </div>
  

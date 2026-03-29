@@ -154,8 +154,10 @@ export interface customerOrderProps {
     quantity: number;
     product_id: number;
     product_name: string;
+    type: number;
     dosage: string;
     price: number;
+    prescriptionrequired: number;
     manufacturer: string;
     barcode: number
   }[]

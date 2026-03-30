@@ -22,8 +22,8 @@ export const addData = async (endpoint: string, body: any, signal?: AbortSignal)
 
 
 // Generative AI
-export const generateProductDetailsAI = async(product_name: string, signal?: AbortSignal): Promise<AIOverview> => {
-  return addData(`${API_URL}/api/generate/product/details`, { product_name }, signal);
+export const generateProductDetailsAI = async(product_name: string, language: "en" | "fil", signal?: AbortSignal): Promise<AIOverview> => {
+  return addData(`${API_URL}/api/generate/product/details`, { product_name, language }, signal);
 }
 
 

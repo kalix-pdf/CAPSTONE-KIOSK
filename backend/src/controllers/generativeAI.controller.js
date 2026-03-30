@@ -10,9 +10,54 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export async function AIPoweredProductDetails (req, res) {
     try {
-        const { product_name } = req.body;
+        const { product_name, language } = req.body;
+        console.log(language);
 
-        const prompt = `
+        let prompt;
+
+        if (language == "fil") {
+            prompt = `
+                You are a medical/pharmaceutical expert. Generate detailed information about the product: "${product_name}" in Filipino.
+                
+                Respond ONLY with a valid JSON object. No markdown, no code blocks, no explanation.
+                
+                Use this exact structure:
+                {
+                "overview": "A 2-3 sentence summary of what this product is and what it treats",
+                "howToUse": [
+                    "Step or instruction 1",
+                    "Step or instruction 2",
+                    "Step or instruction 3"
+                ],
+                "drugInteractions": [
+                    "Interaction warning 1",
+                    "Interaction warning 2"
+                ],
+                "precautions": [
+                    "Precaution 1",
+                    "Precaution 2"
+                ],
+                "storageInstructions": [
+                    "Storage instruction 1",
+                    "Storage instruction 2"
+                ],
+                "whenToSeekHelp": [
+                    "Situation 1",
+                    "Situation 2"
+                ],
+                "faqs": [
+                    "Q: Question? A: Answer."
+                ],
+                "dosageRecommendations": {
+                    "adults": "Dosage for adults",
+                    "elderly": "Dosage for elderly",
+                    "children": "Dosage for children",
+                    "notes": "Important dosage notes"
+                }
+                }
+            `;
+        } else {
+            prompt = `
                 You are a medical/pharmaceutical expert. Generate detailed information about the product: "${product_name}".
                 
                 Respond ONLY with a valid JSON object. No markdown, no code blocks, no explanation.
@@ -52,7 +97,8 @@ export async function AIPoweredProductDetails (req, res) {
                 }
                 }
             `;
-
+        }
+        
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",   
             contents: prompt,

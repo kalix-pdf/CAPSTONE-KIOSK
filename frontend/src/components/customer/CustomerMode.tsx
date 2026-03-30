@@ -168,7 +168,9 @@ export function CustomerMode() {
             {selectedCategoryId !== null && (
               <ProductList
                 setSelectedCategoryId={setSelectedCategoryId}
-                selectedCategoryId={selectedCategoryId} />
+                selectedCategoryId={selectedCategoryId} 
+                language={language}
+              />
             )}
           </div>
         </div>

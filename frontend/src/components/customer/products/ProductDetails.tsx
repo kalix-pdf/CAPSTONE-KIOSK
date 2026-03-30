@@ -4,47 +4,70 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "../../ui/button";
 import { Badge } from "../../ui/badge";
 import { CartItem, useCart } from "../cart/GlobalCart";
-import { AIOverview } from "../../../services/Props";
+import { AIOverview, Product } from "../../../services/Props";
 import { generateProductDetailsAI } from "../../../services/admin/addData.api";
 import { PrescriptionScanner } from "../OCR/PrescriptionScanner";
 
-export const ProductDetails = ({ selectedProduct, setSelectedProduct }: any) => {
+export interface ProductDetailsProps {
+    selectedProduct: Product | null;
+    setSelectedProduct: (product: Product | null) => void;
+    language: "en" | "fil";
+}
+
+const aiInfoCache = new Map<string, AIOverview>();
+
+export const ProductDetails = ({ selectedProduct, setSelectedProduct, language }: ProductDetailsProps) => {
     const [aiLoading, setAiLoading] = useState(false);
     const [aiInfo, setAiInfo] = useState<AIOverview>();
     const { addToCart } = useCart(); 
     const [showPrescriptionScanner, setShowPrescriptionScanner] = useState(false);
     const abortControllerRef = useRef<AbortController | null>(null);
 
-    const handleAdd = (selectedProduct: CartItem) => {
+    const handleAdd = (selectedProduct: Product) => {
         addToCart(selectedProduct);
     };
 
     const fetchAIInfo = async () => {
         if (!selectedProduct?.name) return;
 
-        // abortControllerRef.current?.abort();
-        // abortControllerRef.current = new AbortController();
+        const cacheKey = `${selectedProduct.name}__${language}`;
 
-        // try {
-        //     setAiLoading(true);
-        //     const result = await generateProductDetailsAI(
-        //         selectedProduct.name,
-        //         abortControllerRef.current.signal 
-        //     );
-        //     setAiInfo(result);
-        // } catch (error: any) {
-        //     if (error.name === 'AbortError') return;
-        //     console.error('Failed to fetch AI info:', error);
-        // } finally {
-        //     setAiLoading(false);
-        // }
+        // Return cached result immediately if available
+        if (aiInfoCache.has(cacheKey)) {
+            setAiInfo(aiInfoCache.get(cacheKey));
+            return;
+        }
+
+        abortControllerRef.current?.abort();
+        abortControllerRef.current = new AbortController();
+
+        try {
+            setAiLoading(true);
+            const result = await generateProductDetailsAI(
+                selectedProduct.name,
+                language,
+                abortControllerRef.current.signal 
+            );
+            aiInfoCache.set(cacheKey, result);
+            setAiInfo(result);
+        } catch (error: any) {
+            if (error.name === 'AbortError') return;
+            console.error('Failed to fetch AI info:', error);
+        } finally {
+            setAiLoading(false);
+        }
     };
 
     useEffect(() => {
         if (selectedProduct?.name) {
+            const cacheKey = `${selectedProduct.name}__${language}`;
+            if (aiInfoCache.has(cacheKey)) {
+                setAiInfo(aiInfoCache.get(cacheKey));
+                return;
+            }
             fetchAIInfo();
         }
-    }, [selectedProduct]);
+    }, [selectedProduct, language]);
     
     return (
         <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>

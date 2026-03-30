@@ -10,9 +10,10 @@ import { fetchProductsByCategory } from "../../../services/fetchData.api";
 interface ProductListProps { 
   setSelectedCategoryId: (id: number | null) => void;
   selectedCategoryId: number | null; 
+  language: "en" | "fil";
 }
 
-export const ProductList = ({setSelectedCategoryId, selectedCategoryId}: ProductListProps) => {
+export const ProductList = ({setSelectedCategoryId, selectedCategoryId, language}: ProductListProps) => {
   const [categoryProducts, setCategoryProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -46,7 +47,7 @@ export const ProductList = ({setSelectedCategoryId, selectedCategoryId}: Product
       </Button>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-{          categoryProducts.map((product) => (
+      {categoryProducts.map((product) => (
             <Card key={product.id} onClick={() => setSelectedProduct(product)} 
               className="cursor-pointer hover:shadow-lg transition-shadow shadow-md">
               <CardImage src={getImageSrc(product.image)} alt={product.name} />
@@ -91,6 +92,7 @@ export const ProductList = ({setSelectedCategoryId, selectedCategoryId}: Product
     <ProductDetails
       selectedProduct={selectedProduct}
       setSelectedProduct={setSelectedProduct}
+      language={language}
     />
     </>
   );

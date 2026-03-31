@@ -4,15 +4,16 @@
 
 export const translations = {
   en: {
-    welcome: "Welcome to QiMedSc",
+    welcome: "Voice assistance enabled. Welcome to Pharmacy kiosk, a self-service medication information and pharmacy health kiosk with AI-powered OCR. To Proceed, select a category or search for your medication. For Scanning presrciption, use the prescription scanner and select the scan prescription tab. For scanning medicines, use the medicine scanner and select the scan medicine tab. For more information, please ask our staff for assistance.",
     subtitle: "Select a category or search for medication",
-    viewCart: "View Cart",
+    viewCart: "View Cart. View your shopping cart, review your selected items, and proceed to checkout to receive your queue number for pharmacy pickup. You can also modify item quantities or remove items from your cart before finalizing your order.",
     shoppingCart: "Shopping Cart",
     reviewItems: "Review your items and checkout to get your queue number",
-    searchPlaceholder: "Search by medication name or scan barcode...",
+    openPresription: "Scan Prescription. Place your prescription on the scanner. Make sure the text is clear and well-lit for accurate scanning. The system will automatically read and process the prescription to identify the medications and add them to your cart.",
     scanPrescription: "Scan Prescription",
     scanPrescriptionDesc: "Place your prescription on the scanner",
     searchResults: "Search Results",
+    scanMedicine: "Scan Medicine. Place your medicine label or packaging in front of the scanner. Ensure the text is clear and well-lit for accurate scanning. The system will automatically read and process the information to identify the medicine and add it to your cart.",
     clearSearch: "Clear Search",
     backToCategories: "← Back to Categories",
     addToCart: "Add to Cart",
@@ -60,14 +61,16 @@ export const translations = {
     generic: "Generic"
   },
   fil: {
-    welcome: "Maligayang Pagdating sa QiMedSc",
+    welcome: "Maligayang pagdating sa Pharmacy kiosk, isang self-service medication information at pharmacy health kiosk na may AI-powered OCR. Upang magpatuloy, pumili ng kategorya o maghanap ng iyong gamot. Para sa pag-scan ng reseta, gamitin ang prescription scanner at piliin ang scan prescription tab. Para sa pag-scan ng gamot, gamitin ang medicine scanner at piliin ang scan medicine tab. Para sa karagdagang impormasyon, mangyaring humingi ng tulong sa aming staff.",
     subtitle: "Pumili ng kategorya o maghanap ng gamot",
     viewCart: "Tingnan ang Cart",
     shoppingCart: "Shopping Cart",
+    openPresription: "I-scan ang Reseta. Ilagay ang iyong reseta sa scanner. Siguraduhing malinaw at maliwanag ang teksto para sa tumpak na pag-scan.",
     reviewItems: "Suriin ang iyong mga item at mag-checkout para makuha ang queue number",
     searchPlaceholder: "Maghanap gamit ang pangalan ng gamot o i-scan ang barcode...",
     scanPrescription: "I-scan ang Reseta",
     scanPrescriptionDesc: "Ilagay ang iyong reseta sa scanner",
+    scanMedicine: "I-scan ang Gamot. Ilagay ang label o packaging ng iyong gamot sa harap ng scanner. Siguraduhing malinaw at maliwanag ang teksto para sa tumpak na pag-scan.",
     searchResults: "Mga Resulta ng Paghahanap",
     clearSearch: "Burahin ang Paghahanap",
     backToCategories: "← Bumalik sa mga Kategorya",

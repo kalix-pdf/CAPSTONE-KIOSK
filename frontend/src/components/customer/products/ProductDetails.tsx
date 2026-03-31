@@ -38,15 +38,15 @@ export const ProductDetails = ({ selectedProduct, setSelectedProduct, language }
             return;
         }
 
-        abortControllerRef.current?.abort();
-        abortControllerRef.current = new AbortController();
+        // abortControllerRef.current?.abort();
+        // abortControllerRef.current = new AbortController();
 
         try {
             setAiLoading(true);
             const result = await generateProductDetailsAI(
                 selectedProduct.name,
                 language,
-                abortControllerRef.current.signal 
+                // abortControllerRef.current.signal 
             );
             aiInfoCache.set(cacheKey, result);
             setAiInfo(result);

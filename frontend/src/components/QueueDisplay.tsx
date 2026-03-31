@@ -7,6 +7,36 @@ import { useState, useEffect } from "react";
 import { useAdminSocket } from "../services/streams/socket";
 import { fetchAllOrders, fetchOrders } from "../services/fetchData.api";
 
+// Voice assistance function
+ const speak = (text: string) => {
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 0.7;
+  utterance.pitch = 1;
+  utterance.volume = 1;
+
+  const applyVoiceAndSpeak = () => {
+    const voices = window.speechSynthesis.getVoices();
+    const femaleVoice = voices.find(voice =>
+      voice.name.toLowerCase().includes("female") ||
+      voice.name.toLowerCase().includes("zira") ||
+      voice.name.toLowerCase().includes("samantha") ||
+      voice.name.toLowerCase().includes("google us english")
+    );
+
+    if (femaleVoice) utterance.voice = femaleVoice;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  if (window.speechSynthesis.getVoices().length === 0) {
+    window.speechSynthesis.onvoiceschanged = applyVoiceAndSpeak;
+  } else {
+    applyVoiceAndSpeak();
+  }
+};
+
+
 const PulsingDot = () => (
   <span style={{ position: "relative", display: "inline-flex", width: 12, height: 12 }}>
     <span style={{
@@ -103,6 +133,7 @@ export function QueueDisplay() {
               style={{ color: "rgba(255,255,255,0.4)", letterSpacing: "0.25em", marginBottom: 16, fontFamily: "'DM Mono', monospace" }}>
                 Now Serving </p>
               {currentlyServing.length > 0 ? (
+                speak(`Now serving, ticket number ${currentlyServing[0].queue_number}. Please proceed to the counter`),
                 <div className="flex gap-4" style={{ alignItems: "baseline" }}>
                   <span className="font-bold text-lg" style={{ color: "rgba(74,222,128,0.5)" }}>#</span>
                   <span className="serving-number" style={{ color: "#4ade80", fontSize: 120, fontWeight: 800, lineHeight: 1,

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { ShoppingCart, FileText, Scan, Badge } from "lucide-react";
@@ -13,12 +13,44 @@ import { PrescriptionScanner } from "./OCR/PrescriptionScanner";
 import { MedicineScannerModal } from "./OCR/MedicineScannerModal";
 import { KioskHeader } from "./common/KioskHeader";
 import { toast } from "sonner";
+import { useVoice } from "../hooks/VoiceContenxt";
+
+export const speak = (text: string, voiceAssistanceEnabled: boolean) => {
+    if (!voiceAssistanceEnabled) return;
+    
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    const applyVoiceAndSpeak = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const femaleVoice = voices.find(voice =>
+        voice.name.toLowerCase().includes("female") ||
+        voice.name.toLowerCase().includes("zira") ||
+        voice.name.toLowerCase().includes("samantha") ||
+        voice.name.toLowerCase().includes("google us english")
+      );
+
+      if (femaleVoice) utterance.voice = femaleVoice;
+      window.speechSynthesis.speak(utterance);
+    };
+
+    if (window.speechSynthesis.getVoices().length === 0) {
+      window.speechSynthesis.onvoiceschanged = applyVoiceAndSpeak;
+    } else {
+      applyVoiceAndSpeak();
+    }
+  };
 
 export function CustomerMode() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
 
   // kiosk header
-  const [voiceAssistanceEnabled, setVoiceAssistanceEnabled] = useState(false);
+  const { voiceAssistanceEnabled, setVoiceAssistanceEnabled } = useVoice();
   const [language, setLanguage] = useState<"en" | "fil">("en");
   const [textSize, setTextSize] = useState<"small" | "medium" | "large">("medium");
 
@@ -31,22 +63,11 @@ export function CustomerMode() {
 
   const { getTotalItems } = useCart();
 
-  // Voice assistance function
-  const speak = (text: string) => {
-    if (!voiceAssistanceEnabled) return;
-    
-    // Cancel any ongoing speech
-    window.speechSynthesis.cancel();
-    
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = language === "en" ? "en-US" : "fil-PH";
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    utterance.volume = 1;
-    
-    window.speechSynthesis.speak(utterance);
-  };
-
+  useEffect(() => {
+    if (voiceAssistanceEnabled) {
+      speak(t.welcome, voiceAssistanceEnabled);
+    }
+  }, [voiceAssistanceEnabled]);
 
   return (
     <>
@@ -89,7 +110,7 @@ export function CustomerMode() {
             <SheetTrigger asChild>
               <Button size="lg"
                 className={`relative h-16 px-8 ${getTextSizeClass("text-xl")} font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105`}
-                onClick={() => speak(t.viewCart)}>
+                onClick={() => speak(t.viewCart, voiceAssistanceEnabled)}>
                 <ShoppingCart className="h-6 w-6" /> View Cart
                 {getTotalItems() > 0 && (
                   <Badge className={`absolute -top-2 -left-2 bg-red-500 text-white ${getTextSizeClass("text-sm")} px-2 py-1 min-w-[1.5rem] h-6 flex items-center justify-center rounded-full`}>
@@ -115,7 +136,7 @@ export function CustomerMode() {
             {/* Prescription Scanner Button */}
             <Card 
               className="cursor-pointer hover:shadow-xl transition-all hover:scale-105 border-2 border-green-400 bg-gradient-to-br from-green-50 to-white"
-              onClick={() => { setShowPrescriptionScanner(true); speak(t.scanPrescription); }}>
+              onClick={() => { setShowPrescriptionScanner(true); speak(t.openPresription, voiceAssistanceEnabled);}}>
               <CardContent className="p-5">
                 <div className="flex flex-col items-center gap-4">
                   <div className="bg-green-500 p-4 rounded-2xl shadow-lg">
@@ -133,7 +154,7 @@ export function CustomerMode() {
             <Card 
               className="cursor-pointer hover:shadow-xl transition-all hover:scale-105 border-2 border-lightgreen-300 bg-gradient-to-br from-blue-50 to-white"
               onClick={() => { setshowMedicineScanner(true); 
-                              speak(t.scanToSearch || "Scan to search"); }}>
+                              speak(t.scanMedicine, voiceAssistanceEnabled); }}>
               <CardContent className="p-5">
                 <div className="flex flex-col items-center gap-4">
                   <div className="bg-lightgreen-300 p-4 rounded-2xl shadow-lg">

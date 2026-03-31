@@ -39,14 +39,14 @@ export function KioskHeader({ mode, isAuthenticated, onLogout, voiceAssistanceEn
           {/* Accessibility controls - only show in customer mode */}
           {mode === 'customer' && onVoiceAssistanceToggle && onLanguageChange && onTextSizeChange && (
             <>
-              {/* <Button
+              <Button
                 onClick={onVoiceAssistanceToggle}
                 variant={voiceAssistanceEnabled ? "default" : "secondary"}
                 size="lg"
                 className="h-12"
               >
                 {voiceAssistanceEnabled ? <Volume2 className="h-5 w-5 mr-2" /> : <VolumeX className="h-5 w-5 mr-2" />}
-              </Button> */}
+              </Button>
               
               <Select
                 value={language}

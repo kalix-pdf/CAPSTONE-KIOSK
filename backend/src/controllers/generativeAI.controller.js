@@ -11,7 +11,6 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 export async function AIPoweredProductDetails (req, res) {
     try {
         const { product_name, language } = req.body;
-        console.log(language);
 
         let prompt;
 
@@ -262,7 +261,7 @@ export async function PrescriptionAIPowered (req, res) {
                 prescriptionrequired: 0
             },
             {
-                id: 2,
+                id: 22,
                 name: "Paracetamol",
                 dosage: "10mg",
                 price: 10,
@@ -270,17 +269,17 @@ export async function PrescriptionAIPowered (req, res) {
                 manufacturer: "Biogesic",
                 type: 1,
                 prescriptionrequired: 0
-            },
-            {
-                id: 7,
-                name: "Bioflu",
-                dosage: "500mg",
-                price: 90,
-                stock: 100,
-                type: 0,
-                prescriptionrequired: 1,
-                manufacturer: "Generika"
-            },
+            }
+            // {
+            //     id: 7,
+            //     name: "Bioflu",
+            //     dosage: "500mg",
+            //     price: 90,
+            //     stock: 100,
+            //     type: 0,
+            //     prescriptionrequired: 1,
+            //     manufacturer: "Generika"
+            // },
         ]
     };
 

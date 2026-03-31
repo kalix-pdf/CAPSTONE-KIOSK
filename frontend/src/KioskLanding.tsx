@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { FileText, Scan, LayoutGrid, Activity } from "lucide-react";
-import { Card, CardContent } from "./components/ui/card";
+import { FileText, Scan, LayoutGrid, Activity, Volume2, VolumeX } from "lucide-react";
+import { translations } from "./catalog/translation";
 import { PrescriptionScanner } from "./components/customer/OCR/PrescriptionScanner";
 import { MedicineScannerModal } from "./components/customer/OCR/MedicineScannerModal";
-import { CustomerMode } from "./components/customer/CustomerMode";
+import { speak } from "./components/customer/CustomerMode";
+import { useVoice } from "./components/hooks/VoiceContenxt";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 interface KioskLandingProps {
@@ -191,6 +192,44 @@ const GLOBAL_STYLES = `
     background: #4eff91;
     box-shadow: 0 0 8px #4eff91;
     animation: blink-dot 2s ease-in-out infinite;
+  }
+
+  /* ── Voice toggle button (top-left, beside clock) ─────── */
+  .voice-toggle {
+    position: absolute;
+    top: 38px; left: 42px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 100px;
+    padding: 6px 16px 6px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid;
+    backdrop-filter: blur(8px);
+    transition: all 0.25s ease;
+    user-select: none;
+  }
+  .voice-toggle.enabled {
+    background: rgba(134,255,249,0.15);
+    border-color: rgba(134,255,249,0.5);
+    color: var(--teal-glow);
+    box-shadow: 0 0 16px rgba(134,255,249,0.2);
+  }
+  .voice-toggle.disabled {
+    background: rgba(134,255,249,0.04);
+    border-color: rgba(134,255,249,0.12);
+    color: rgba(134,255,249,0.35);
+  }
+  .voice-toggle:hover {
+    transform: scale(1.04);
+  }
+  .voice-toggle.enabled:hover {
+    box-shadow: 0 0 24px rgba(134,255,249,0.3);
   }
 
   /* ── Logo orbit system ────────────────────────────────── */
@@ -506,11 +545,38 @@ export default function KioskLanding({ onEnterBrowse }: KioskLandingProps) {
   const [clock, setClock] = useState(new Date());
   const [showPrescriptionScanner, setShowPrescriptionScanner] = useState(false);
   const [showMedicineScanner, setShowMedicineScanner] = useState(false);
-  // const [showCustomerMode, setShowCustomerMode] = useState(false);
+  const { voiceAssistanceEnabled, setVoiceAssistanceEnabled } = useVoice();
 
-  // if (showCustomerMode) {
-  //   return <CustomerMode />;
-  // }
+  const t = translations["en"];
+
+  const handleVoiceToggle = () => {
+    const next = !voiceAssistanceEnabled;
+    setVoiceAssistanceEnabled(next);
+    // Speak feedback using the next value directly (state hasn't updated yet)
+    if (next) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(t.welcome);
+      utterance.rate = 0.9;
+      const applyAndSpeak = () => {
+        const voices = window.speechSynthesis.getVoices();
+        const femaleVoice = voices.find(v =>
+          v.name.toLowerCase().includes("female") ||
+          v.name.toLowerCase().includes("zira") ||
+          v.name.toLowerCase().includes("samantha") ||
+          v.name.toLowerCase().includes("google us english")
+        );
+        if (femaleVoice) utterance.voice = femaleVoice;
+        window.speechSynthesis.speak(utterance);
+      };
+      if (window.speechSynthesis.getVoices().length === 0) {
+        window.speechSynthesis.onvoiceschanged = applyAndSpeak;
+      } else {
+        applyAndSpeak();
+      }
+    } else {
+      window.speechSynthesis.cancel();
+    }
+  };
 
   useEffect(() => {
     const t = setInterval(() => setClock(new Date()), 1000);
@@ -539,8 +605,8 @@ export default function KioskLanding({ onEnterBrowse }: KioskLandingProps) {
           System Online
         </div>
 
-        {/* Clock — bottom left */}
-        <div className="clock-block">
+        {/* Clock — below voice toggle */}
+        <div className="clock-block" style={{ top: 80 }}>
           <div className="clock-time">
             <span className="clock-dot" />
             {timeStr}
@@ -548,7 +614,16 @@ export default function KioskLanding({ onEnterBrowse }: KioskLandingProps) {
           <div className="clock-date">{dateStr}</div>
         </div>
 
-        {/* EKG decoration — bottom right */}
+        <button className={`voice-toggle ${voiceAssistanceEnabled ? "enabled" : "disabled"}`}
+          onClick={handleVoiceToggle}>
+          {voiceAssistanceEnabled
+            ? <Volume2 size={14} style={{ flexShrink: 0 }} />
+            : <VolumeX size={14} style={{ flexShrink: 0 }} />
+          }
+          {voiceAssistanceEnabled ? "Voice On" : "Voice Off"}
+        </button>
+
+
         <EkgLine />
 
         {/* Main content */}
@@ -568,7 +643,10 @@ export default function KioskLanding({ onEnterBrowse }: KioskLandingProps) {
               title="Scan Prescription"
               tagalog="Is-kan ang Reseta"
               description="scan your doctor's prescription"
-              onClick={() => setShowPrescriptionScanner(true)}
+              onClick={() => {
+                speak(t.openPresription, voiceAssistanceEnabled);
+                setShowPrescriptionScanner(true);
+              }}
               animDelay={100}
             />
             <ActionCard
@@ -577,7 +655,10 @@ export default function KioskLanding({ onEnterBrowse }: KioskLandingProps) {
               title="Scan Medicine"
               tagalog="Is-kan ang Gamot"
               description="Scan a medicine label or packaging"
-              onClick={() => setShowMedicineScanner(true)}
+              onClick={() => {
+                speak(t.scanMedicine, voiceAssistanceEnabled);
+                setShowMedicineScanner(true);
+              }}
               animDelay={220}
             />
             <ActionCard
@@ -586,7 +667,10 @@ export default function KioskLanding({ onEnterBrowse }: KioskLandingProps) {
               title="Browse Catalogue"
               tagalog="Maghanap ng Gamot"
               description="Explore our full medicine catalogue"
-              onClick={onEnterBrowse}
+              onClick={() => {
+                speak("Opening medicine catalogue", voiceAssistanceEnabled);
+                onEnterBrowse();
+              }}
               animDelay={340}
             />
           </div>
@@ -601,7 +685,6 @@ export default function KioskLanding({ onEnterBrowse }: KioskLandingProps) {
         open={showPrescriptionScanner}
         onOpenChange={setShowPrescriptionScanner}
         onBrowser={onEnterBrowse}
-
       />
       <MedicineScannerModal
         open={showMedicineScanner}

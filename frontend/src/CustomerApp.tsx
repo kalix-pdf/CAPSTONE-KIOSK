@@ -4,19 +4,20 @@ import { CustomerMode } from "./components/customer/CustomerMode";
 import { Toaster } from "./components/ui/sonner";
 import { CartProvider } from "./components/customer/cart/GlobalCart";
 import KioskLanding from "./KioskLanding";
+import { VoiceProvider } from "./components/hooks/VoiceContenxt";
 
 export default function CustomerApp() {
   type TransitionState = 'landing' | 'transitioning' | 'browse';
   const [transitionState, setTransitionState] = useState<TransitionState>('landing');
 
   const handleEnterBrowse = () => {
-    console.log("browse medicine");
     setTransitionState('transitioning');
-    setTimeout(() => setTransitionState('browse'), 100); // match CSS duration
+    setTimeout(() => setTransitionState('browse'), 100); 
   };
   return (
     <>
       <Toaster />
+      <VoiceProvider>
       <CartProvider>
         <div className="max-h-screen max-w-full overflow-hidden">
           <div
@@ -44,6 +45,7 @@ export default function CustomerApp() {
 
         </div>
       </CartProvider>
+      </VoiceProvider>
     </>
   );
 }

@@ -1,19 +1,20 @@
-import { AlertTriangle, MessageSquare, Ticket } from "lucide-react";
+import { MessageSquare, Ticket } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../ui/dialog";
-import { Button } from "../../ui/button";
 import { QueueTicketProps } from "./QueueTicketProps";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const QueueTicket = ({ QueueNumber, phoneNumber, orderID, orderItems, totalAmount }: QueueTicketProps) => {
   const [showTicketDialog, setShowTicketDialog] = useState(true);
-  const [countdown, setCountdown] = useState(9);
+  const [countdown, setCountdown] = useState(8);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (showTicketDialog && countdown > 0) {
       const timer = setTimeout(() => {setCountdown(countdown - 1)}, 1000);
       return () => clearTimeout(timer);
     } else if (countdown === 0) {
-      window.location.reload();
+      navigate("/", { replace: true });
     }
   }, [showTicketDialog, countdown]);
 

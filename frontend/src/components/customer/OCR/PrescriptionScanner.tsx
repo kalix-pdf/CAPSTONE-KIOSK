@@ -227,7 +227,7 @@ export function PrescriptionScanner({ open, onBrowser, onOpenChange }: Prescript
  
             {/* Info footer */}
             <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg">
-              <p className="flex flex-col items-start gap-2 text-sm">
+              <div className="flex flex-col items-start gap-2 text-sm">
                 <div>
                   <span className="text-blue-600 mr-3">ℹ️</span>
                   <span>
@@ -242,7 +242,7 @@ export function PrescriptionScanner({ open, onBrowser, onOpenChange }: Prescript
                     automatically extract medication names, dosages, and instructions.
                   </span>
                 </div>
-              </p>
+              </div>
             </div>
           </div>
         )}

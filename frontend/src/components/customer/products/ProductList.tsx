@@ -41,7 +41,7 @@ export const ProductList = ({setSelectedCategoryId, selectedCategoryId, language
   
   return (
     <>
-    <div className="bg-gray overflow-y-auto max-h-screen">
+    <div className="bg-gray-50">
       <Button variant="outline" onClick={() => setSelectedCategoryId(null)} className="mb-6" >
         ← Back to Categories
       </Button>

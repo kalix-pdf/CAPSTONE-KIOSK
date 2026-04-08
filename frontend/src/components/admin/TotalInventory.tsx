@@ -47,7 +47,7 @@ export const TotalInventory = ({totalCustomerOrder, setTotalCustomerOrder}: prop
             </CardHeader>
             <CardContent>
               <div className="text-gray-900">
-                ₱{stats?.total_value_price.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ₱{stats?.total_value_price?.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
               <p className="text-muted-foreground">
                 Current stock value </p>

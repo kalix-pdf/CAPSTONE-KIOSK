@@ -85,9 +85,6 @@ export const QueueTicket = ({ QueueNumber, phoneNumber, orderID, orderItems, tot
                       ℹ️ Please wait in the designated area. Your number will be called on the display screen.
                     </p>
                   </div>
-
-                  
-
                   {/* <Button onClick={() => setShowTicketDialog(false)} className="w-full"
                     size="lg" > Close </Button> */}
                 </div>

@@ -1,0 +1,400 @@
+import { MessageSquare, Ticket, Printer } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../ui/dialog";
+import { QueueTicketProps } from "./QueueTicketProps";
+import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+
+// ESC/POS command helpers
+const ESC = 0x1b;
+const GS = 0x1d;
+
+const escpos = {
+  INIT:           [ESC, 0x40],
+  ALIGN_CENTER:   [ESC, 0x61, 0x01],
+  ALIGN_LEFT:     [ESC, 0x61, 0x00],
+  ALIGN_RIGHT:    [ESC, 0x61, 0x02],
+  BOLD_ON:        [ESC, 0x45, 0x01],
+  BOLD_OFF:       [ESC, 0x45, 0x00],
+  DOUBLE_SIZE_ON: [GS,  0x21, 0x11],  // 2x width + 2x height
+  DOUBLE_HEIGHT:  [GS,  0x21, 0x01],
+  NORMAL_SIZE:    [GS,  0x21, 0x00],
+  CUT_PAPER:      [GS,  0x56, 0x42, 0x00],
+  LINE_FEED:      [0x0a],
+  DIVIDER:        "--------------------------------\n",
+};
+
+function encodeText(text: string): Uint8Array {
+  return new TextEncoder().encode(text);
+}
+
+function buildCommands(...parts: Array<number[] | Uint8Array | string>): Uint8Array {
+  const arrays = parts.map((p) => {
+    if (typeof p === "string") return encodeText(p);
+    if (p instanceof Uint8Array) return p;
+    return new Uint8Array(p);
+  });
+  const total = arrays.reduce((sum, a) => sum + a.length, 0);
+  const result = new Uint8Array(total);
+  let offset = 0;
+  for (const a of arrays) {
+    result.set(a, offset);
+    offset += a.length;
+  }
+  return result;
+}
+
+function padLine(left: string, right: string, width = 32): string {
+  const spaces = Math.max(1, width - left.length - right.length);
+  return left + " ".repeat(spaces) + right + "\n";
+}
+
+function centerText(text: string, width = 32): string {
+  const pad = Math.max(0, Math.floor((width - text.length) / 2));
+  return " ".repeat(pad) + text + "\n";
+}
+
+// Web Serial API thermal printing
+async function printViaSerial(receiptData: Uint8Array): Promise<void> {
+  if (!("serial" in navigator)) {
+    throw new Error("Web Serial API not supported. Use Chrome/Edge on desktop.");
+  }
+  const port = await (navigator as any).serial.requestPort();
+  await port.open({ baudRate: 9600 });
+  const writer = port.writable.getWriter();
+  await writer.write(receiptData);
+  await writer.releaseLock();
+  await port.close();
+}
+
+// Browser print fallback (opens a styled print window)
+function printViaWindow(
+  QueueNumber: number | string,
+  orderItems: QueueTicketProps["orderItems"],
+  totalAmount: number,
+  phoneNumber?: string,
+  orderID?: number
+) {
+  const itemsHtml = (orderItems ?? [])
+    .map(
+      (item) => `
+      <div class="item">
+        <span class="item-name">${item.item_name}</span>
+        <span class="item-total">₱${item.total_amount.toFixed(2)}</span>
+      </div>
+      <div class="item-meta">Qty: ${item.quantity}</div>`
+    )
+    .join("");
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" });
+  const timeStr = now.toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit" });
+
+  const win = window.open("", "_blank", "width=400,height=600");
+  if (!win) throw new Error("Popup blocked. Please allow popups for this site.");
+
+  win.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Receipt</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          font-family: 'Courier New', monospace;
+          font-size: 12px;
+          width: 300px;
+          margin: 0 auto;
+          padding: 8px;
+          background: #fff;
+          color: #000;
+        }
+        .center { text-align: center; }
+        .bold { font-weight: bold; }
+        .divider { border-top: 1px dashed #000; margin: 6px 0; }
+        .queue-number {
+          font-size: 48px;
+          font-weight: 900;
+          text-align: center;
+          margin: 8px 0;
+          letter-spacing: -1px;
+        }
+        .queue-label { text-align: center; font-size: 11px; color: #444; }
+        .item { display: flex; justify-content: space-between; margin: 2px 0; }
+        .item-name { flex: 1; }
+        .item-total { font-weight: bold; }
+        .item-meta { font-size: 10px; color: #555; margin-bottom: 4px; }
+        .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; }
+        .footer { text-align: center; margin-top: 8px; font-size: 10px; color: #555; }
+        @media print {
+          body { margin: 0; }
+          button { display: none !important; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="center bold" style="font-size:14px">PHARMACY</div>
+      <div class="center" style="font-size:10px; color:#555">${dateStr} ${timeStr}</div>
+      ${orderID ? `<div class="center" style="font-size:10px">Order #${orderID}</div>` : ""}
+      <div class="divider"></div>
+
+      <div class="queue-label">QUEUE NUMBER</div>
+      <div class="queue-number">#${QueueNumber}</div>
+      <div class="divider"></div>
+
+      <div class="bold" style="margin-bottom:4px">ORDER ITEMS</div>
+      ${itemsHtml}
+      <div class="divider"></div>
+
+      <div class="total-row">
+        <span>TOTAL</span>
+        <span>${typeof totalAmount === "number" ? `₱${totalAmount.toFixed(2)}` : totalAmount}</span>
+      </div>
+      <div class="divider"></div>
+
+      <div class="footer">Estimated Wait: 5–10 minutes</div>
+      ${phoneNumber ? `<div class="footer">SMS sent to ${phoneNumber}</div>` : ""}
+      <div class="footer">Please wait in the designated area.</div>
+      <div class="footer">Thank you!</div>
+
+      <br/>
+      <button onclick="window.print();window.close();"
+        style="width:100%;padding:8px;font-size:13px;cursor:pointer;border:1px solid #000;background:#f0f0f0;border-radius:4px;">
+        🖨️ Print Receipt
+      </button>
+    </body>
+    </html>
+  `);
+  win.document.close();
+  // Auto-trigger print
+  win.onload = () => {
+    win.focus();
+    win.print();
+  };
+}
+
+// Build ESC/POS byte stream
+function buildReceipt(
+  QueueNumber: number | string,
+  orderItems: QueueTicketProps["orderItems"],
+  totalAmount: number,
+  phoneNumber?: string,
+  orderID?: number
+): Uint8Array {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" });
+  const timeStr = now.toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit" });
+
+  return buildCommands(
+    escpos.INIT,
+    escpos.ALIGN_CENTER,
+    escpos.BOLD_ON,
+    "PHARMACY\n",
+    escpos.BOLD_OFF,
+    escpos.NORMAL_SIZE,
+    `${dateStr}  ${timeStr}\n`,
+    orderID ? `Order #${orderID}\n` : "",
+    escpos.DIVIDER,
+
+    // Queue Number — big
+    "QUEUE NUMBER\n",
+    escpos.DOUBLE_SIZE_ON,
+    escpos.BOLD_ON,
+    `#${QueueNumber}\n`,
+    escpos.BOLD_OFF,
+    escpos.NORMAL_SIZE,
+    escpos.DIVIDER,
+
+    // Items
+    escpos.ALIGN_LEFT,
+    escpos.BOLD_ON,
+    "ORDER ITEMS\n",
+    escpos.BOLD_OFF,
+    ...(orderItems ?? []).flatMap((item) => [
+      padLine(item.item_name, `P${item.total_amount.toFixed(2)}`),
+      `  Qty: ${item.quantity}\n`,
+    ]),
+    escpos.DIVIDER,
+
+    // Total
+    escpos.BOLD_ON,
+    padLine("TOTAL", typeof totalAmount === "number" ? `P${totalAmount.toFixed(2)}` : String(totalAmount)),
+    escpos.BOLD_OFF,
+    escpos.DIVIDER,
+
+    // Footer
+    escpos.ALIGN_CENTER,
+    "Estimated Wait: 5-10 minutes\n",
+    phoneNumber ? `SMS sent to ${phoneNumber}\n` : "",
+    "Please wait in designated area.\n",
+    "Thank you!\n",
+    escpos.LINE_FEED,
+    escpos.LINE_FEED,
+    escpos.LINE_FEED,
+    escpos.CUT_PAPER,
+  );
+}
+
+export const QueueTicket = ({
+  QueueNumber,
+  phoneNumber,
+  orderID,
+  orderItems,
+  totalAmount,
+}: QueueTicketProps) => {
+  const [showTicketDialog, setShowTicketDialog] = useState(true);
+  const [countdown, setCountdown] = useState(8);
+  const [printStatus, setPrintStatus] = useState<"idle" | "printing" | "success" | "error">("idle");
+  const [printError, setPrintError] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (showTicketDialog && countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (countdown === 0) {
+      navigate("/", { replace: true });
+    }
+  }, [showTicketDialog, countdown]);
+
+  const handlePrint = useCallback(async () => {
+    setPrintStatus("printing");
+    setPrintError(null);
+
+    try {
+      // Attempt Web Serial API (direct thermal printer)
+      const receipt = buildReceipt(QueueNumber, orderItems, totalAmount, phoneNumber, orderID);
+      await printViaSerial(receipt);
+      setPrintStatus("success");
+    } catch (err: any) {
+      // Fallback to browser print dialog
+      if (
+        err?.message?.includes("No port selected") ||
+        err?.name === "NotFoundError"
+      ) {
+        // User cancelled port selection — do nothing
+        setPrintStatus("idle");
+        return;
+      }
+
+      // For unsupported browsers or other errors, fall back to window print
+      try {
+        printViaWindow(QueueNumber, orderItems, totalAmount, phoneNumber, orderID);
+        setPrintStatus("success");
+      } catch (fallbackErr: any) {
+        setPrintStatus("error");
+        setPrintError(fallbackErr?.message ?? "Printing failed.");
+      }
+    }
+  }, [QueueNumber, orderItems, totalAmount, phoneNumber, orderID]);
+  
+  return (
+    <div>
+      <Dialog open={showTicketDialog} onOpenChange={setShowTicketDialog}>
+        <DialogContent className="max-w-md" hideCloseButton={true}>
+          {orderItems && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-center">Order Confirmed!</DialogTitle>
+                <DialogDescription className="text-center">
+                  Your queue number for prescription pickup
+                  <span className="block text-yellow-900 font-semibold">
+                    Auto-Close in{" "}
+                    <span className="text-2xl font-bold">{countdown}</span> seconds...
+                  </span>
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-2 py-2">
+                <div className="bg-green-50 border-2 border-green-500 rounded-lg p-8 text-center">
+                  <Ticket className="h-12 w-12 mx-auto text-green-600 mb-4" />
+                  <p className="text-gray-600 mb-2">Your Queue Number</p>
+                  <div className="text-6xl font-bold text-green-600 mb-4">
+                    #{QueueNumber}
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    {orderItems.map((item, index) => (
+                      <div key={index} className="text-gray-900">
+                        <p className="text-lg font-semibold">{item.item_name}</p>
+                        <p className="text-sm text-gray-600 font-semibold">
+                          Quantity: {item.quantity} | Total: ₱{item.total_amount.toFixed(2)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-gray-600">
+                  <p className="flex items-center justify-between">
+                    <span>Total:</span>
+                    <span className="text-gray-900">{totalAmount}</span>
+                  </p>
+                  <p className="flex items-center justify-between">
+                    <span>Estimated Wait:</span>
+                    <span className="text-gray-900">5-10 minutes</span>
+                  </p>
+                  {phoneNumber && (
+                    <p className="flex items-center justify-between">
+                      <span>Phone:</span>
+                      <span className="text-gray-900">{phoneNumber}</span>
+                    </p>
+                  )}
+                </div>
+
+                {phoneNumber && (
+                  <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+                    <div className="flex items-center gap-2 text-green-900">
+                      <MessageSquare className="h-5 w-5" />
+                      <p>
+                        <strong>SMS Sent!</strong> Your queue number has been sent to {phoneNumber}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* 🖨️ Print Receipt Button */}
+                <button
+                  onClick={handlePrint}
+                  disabled={printStatus === "printing"}
+                  className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-semibold text-sm transition-all
+                    ${printStatus === "printing"
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : printStatus === "success"
+                      ? "bg-green-100 text-green-700 border border-green-300"
+                      : printStatus === "error"
+                      ? "bg-red-50 text-red-600 border border-red-300"
+                      : "bg-gray-900 text-white hover:bg-gray-700 active:scale-95"
+                    }`}
+                >
+                  <Printer className="h-4 w-4" />
+                  {printStatus === "printing"
+                    ? "Printing..."
+                    : printStatus === "success"
+                    ? "✓ Receipt Printed"
+                    : printStatus === "error"
+                    ? "Retry Print"
+                    : "Print Receipt"}
+                </button>
+
+                {printError && (
+                  <p className="text-xs text-red-500 text-center">{printError}</p>
+                )}
+
+                {printStatus === "success" && (
+                  <p className="text-xs text-green-600 text-center">
+                    Receipt sent to printer successfully.
+                  </p>
+                )}
+
+                <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                  <p className="text-blue-900">
+                    ℹ️ Please wait in the designated area. Your number will be called on the display screen.
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};

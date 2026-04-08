@@ -78,7 +78,7 @@ export const addProduct = async(newProduct, image_url, public_id) => {
 
         if (product_id) {
             const descriptionQuery = `INSERT INTO product_description(product_id, active_ingredients, type, image_url, public_id)
-                                     VALUES($1, $2, $3, $4, $5)`;
+                                     VALUES($1, $2, $3, $4, $5)`; 
                 
             const descriptionResult = await client.query(descriptionQuery, [product_id, active_ingredients, type, image_url, public_id]);
             

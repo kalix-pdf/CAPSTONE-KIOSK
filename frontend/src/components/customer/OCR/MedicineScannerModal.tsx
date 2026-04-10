@@ -57,15 +57,15 @@ export function MedicineScannerModal({ open, onOpenChange, onBrowse }: MedicineS
               : null;
             setRecognizedMeds(matchedProduct);
 
-            // const medName = AIOCR.extractedText.ExtractedText?.BrandName ?? 
-            //   AIOCR.extractedText.ExtractedText?.GenericName ?? null;
+            const medName = AIOCR.extractedText.ExtractedText?.BrandName ?? 
+              AIOCR.extractedText.ExtractedText?.GenericName ?? null;
 
-            // if (medName) {
-            //   const medicineInformation = await generateProductDetailsAI(medName);
-            //   setAIinfo(medicineInformation);
-            // } else {
-            //   toast.info("Cannot Find Medicine");
-            // }
+            if (medName) {
+              const medicineInformation = await generateProductDetailsAI(medName, "en");
+              setAIinfo(medicineInformation);
+            } else {
+              toast.info("Cannot Find Medicine");
+            }
 
             setScanningStatus('complete');
           } else {

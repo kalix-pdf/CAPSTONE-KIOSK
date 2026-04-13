@@ -162,3 +162,8 @@ export interface customerOrderProps {
     barcode: number
   }[]
 }
+
+export interface PaginatedProducts {
+  data: Product[];
+  total: number;
+}

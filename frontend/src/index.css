@@ -1051,6 +1051,10 @@
     height: 75vh;
   }
 
+  .h-100vh {
+    height: 100vh;
+  }
+
   .w-2\.5 {
     width: calc(var(--spacing) * 2.5);
   }
@@ -1620,6 +1624,10 @@
 
   .border-gray-300 {
     border-color: var(--color-gray-300);
+  }
+
+  .border-white {
+    border-color: var(--color-white);
   }
 
   .border-green-200 {

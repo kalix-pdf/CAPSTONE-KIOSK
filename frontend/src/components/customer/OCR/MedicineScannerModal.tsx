@@ -28,7 +28,7 @@ export function MedicineScannerModal({ open, onOpenChange, onBrowse }: MedicineS
   const [recognizedMeds, setRecognizedMeds] = useState<Product | null>();
   const [aiInfo, setAIinfo] = useState<AIOverview>(); 
   const [error, setError] = useState<string>('');
-  const { addToCart, setExtractedText, getTotalItems } = useCart();
+  const { addToCart, setScannedID, setExtractedText, getTotalItems } = useCart();
   const [isCartOpen, setIsCartOpen] = useState(false);
   
   useEffect(() => {
@@ -49,6 +49,7 @@ export function MedicineScannerModal({ open, onOpenChange, onBrowse }: MedicineS
           const AIOCR = await AIPoweredOCRMedicine(blob);
           
           if (AIOCR) {
+            setScannedID(AIOCR.scanned_id);
             setAIResponse(AIOCR);
             setExtractedText(AIOCR.extractedText);
 

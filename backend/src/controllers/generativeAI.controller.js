@@ -396,23 +396,17 @@ export async function MedinceScannerAIPowered (req, res) {
         });
         const text = response.choices[0].message.content.trim();
 
-        //Gemini AI
-        // const response = await ai.models.generateContent({
-        //     model: "gemini-2.5-flash",
-        //     contents: [
-        //         {
-        //             inlineData: {
-        //                 mimeType: "image/jpeg",
-        //                 data: base64ImageFile,
-        //             },
-        //         },
-        //         { text: prompt }
-        //     ],
-        // });
-        // const text = response.text.trim();
-
         const clean = text.replace(/```json|```/g, "").trim();
         const parsed = JSON.parse(clean);
+
+        if (!parsed.Valid) {
+            return res.status(200).json({
+                scanned_id: scannedID,
+                extractedText: parsed,
+                RecognizedMeds: [],
+                message: "Invalid input: No medicine label detected."
+            });
+        }
 
         const recognizedMeds = await Promise.all(parsed.RecognizedMeds.map(med => getProduct(med)));
         const flatResults = recognizedMeds.flat();
@@ -471,7 +465,7 @@ export async function MedinceScannerAIPowered (req, res) {
         // return res.status(200).json(hardcodedResponse);
             
     } catch (error) {
-        console.error('Gemini AI error:', error);
+        console.error('AI error:', error);
         return res.status(500).json({ message: 'Failed to generate product details' });
     }
     

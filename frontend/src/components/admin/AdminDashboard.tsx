@@ -13,106 +13,113 @@ import { CustomerOrder } from "./catalog/customerOrder";
 
 export function AdminDashboard() {
   const [totalCustomerOrder, setTotalCustomerOrder] = useState<number | null>(null);
-  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("inventory");
   const { logout } = useAuth();
+
+  const navItems = [
+    { key: "inventory", label: "Medication Inventory", icon: <Pill className="h-4 w-4 mr-3" />, group: "Inventory" },
+    { key: "categories", label: "Categories", icon: <Tag className="h-4 w-4 mr-3" />, group: "Inventory" },
+    { key: "orders", label: "Customer Orders", icon: <ShoppingCart className="h-4 w-4 mr-3" />, group: "Operations" },
+    { key: "activity", label: "Admin Activity Log", icon: <Activity className="h-4 w-4 mr-3" />, group: "Operations" },
+  ];
+
+  const groups = [...new Set(navItems.map(i => i.group))];
 
   return (
     <><Toaster /> 
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-         <div>
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-gray-900 text-xl">Administrator Dashboard</h1>
-            <div className="flex gap-4">
-              <button className="border-red-300 border-2 text-sm rounded-md px-4 py-2 bg-red-100" onClick={logout}>Logout</button>
-              <Badge variant="outline" className="text-black bg-lumot-100 border-lumot-600 px-4 py-2">
-                Admin Staff
-              </Badge>
-            </div>
-          </div>
-          <p className="text-gray-600">Manage Pharmacy</p>
+    <div className="flex min-h-screen bg-gray-50">
+      <aside className="border-r border-gray-200 p-8 bg-lumot-900 text-white flex justify-between flex-col">
+        <div className="px-5 py-5 border-b border-white">
+          <h2 className="text-lg font-medium">Pharmacy Admin</h2>
+          <p className="mt-0.5 mb-1">Management Portal</p>
         </div>
 
-        {/* Stats */}
-        <TotalInventory
-          totalCustomerOrder={totalCustomerOrder}
-          setTotalCustomerOrder={setTotalCustomerOrder}/>
+        <nav className="flex-1 py-3">
+          {groups.map(group => (
+            <div key={group}>
+              <p className="px-5 py-2 text-sm uppercase tracking-widest text-gray-400 font-medium">
+                {group}
+              </p>
+              {navItems.filter(i => i.group === group).map(item => (
+                <button key={item.key}
+                  onClick={() => setActiveTab(item.key)}
+                  className={`w-full flex items-center gap-2.5 px-6 py-2.5 p-2 border-l-2 transition-colors
+                    ${activeTab === item.key
+                      ? "bg-white rounded-2xl text-black border-violet-500 font-medium"
+                      : "border-transparent hover:bg-gray-50 hover:text-gray-800"
+                    }`}>
+                  {item.icon}
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          ))}
+        </nav>
 
-        {/* Management Tabs */}
-        <Card className="py-6 border-lumot-900 bg-gray-100">
-          <CardHeader>
-            <CardTitle>Pharmacy Management</CardTitle>
-            <CardDescription>Manage medications and categories</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="inventory">
-              <TabsList className="grid w-full grid-cols-4 max-w-4xl">
-                <TabsTrigger value="inventory">
-                  <Pill className="h-4 w-4 mr-2" />
-                  Medication Inventory
-                </TabsTrigger>
-                <TabsTrigger value="categories">
-                  <Tag className="h-4 w-4 mr-2" />
-                  Categories
-                </TabsTrigger>
-                <TabsTrigger value="activity">
-                  <Activity className="h-4 w-4 mr-2" />
-                  Admin Activity Log
-                </TabsTrigger>
-                <TabsTrigger value="orders">
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Customer Orders
-                </TabsTrigger>
-              </TabsList>
+        <div className="p-4 border-t border-white space-y-2">
+          <Badge variant="outline" className="text-black bg-lumot-100 border-lumot-600 px-3 py-1 w-full justify-center">
+            Manage Account
+          </Badge>
+          <button className="w-full border border-red-300 rounded-md px-4 py-2 bg-red-50 text-red-700 hover:bg-red-100"
+            onClick={logout}>
+            Logout
+          </button>
+        </div>
+      </aside>
 
-              {/* Inventory Tab */}
-              <TabsContent value="inventory" className="space-y-4 mt-6">
-                <MedicationInventory />
-              </TabsContent>
+      <div className="flex-1 flex flex-col overflow-hidden overflow-y-auto h-100vh space-y-2">
+        <header className="bg-lumot-900 text-white border-b border-gray-200 px-8 py-4 flex justify-between">
+          <div>
+            <h1 className="text-xl">Administrator Dashboard</h1>
+            <p className="mt-0.5">Manage Pharmacy</p>
+          </div>
+          <div>
+            <img src="/images/logo-white.png" className="object-cover w-16" alt="" />
+          </div>
+        </header> 
 
-              {/* Categories Tab */}
-              <TabsContent value="categories" className="space-y-4 mt-6">
-                <Categories />
-              </TabsContent>
+        <main className="flex-1 p-8 overflow-y-auto space-y-6">
+          <TotalInventory
+            totalCustomerOrder={totalCustomerOrder}
+            setTotalCustomerOrder={setTotalCustomerOrder}/>
 
-              {/* Activity Log Tab */}
-              <TabsContent value="activity" className="space-y-4 mt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Track all administrative actions and system events
-                    </p>
+          <Card className="border-lumot-900 bg-gray-100 py-6">
+            <CardHeader>
+              <CardTitle>Manage medications and categories</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {activeTab === "inventory" && <MedicationInventory />}
+              {activeTab === "categories" && <Categories />}
+              {activeTab === "orders" && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-muted-foreground">View all customer orders placed through the kiosk</p>
+                      <p className="text-gray-500 mt-1 text-sm">
+                        Showing last {totalCustomerOrder} customer orders • Click to view details
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">
+                      <ShoppingCart className="h-3 w-3 mr-1" />
+                      {totalCustomerOrder} Orders
+                    </Badge>
                   </div>
+                  <CustomerOrder />
                 </div>
-                <ActivityLogs/>
-              </TabsContent>
-
-              {/* Customer Orders Tab */}
-              <TabsContent value="orders" className="space-y-4 mt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-muted-foreground">
-                      View all customer orders placed through the kiosk
-                    </p>
-                    <p className="text-gray-500 mt-1">
-                      Showing last {totalCustomerOrder} customer orders • Click to view details
-                    </p>
-                  </div>
-                  <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">
-                    <ShoppingCart className="h-3 w-3 mr-1" />
-                    {totalCustomerOrder} Orders
-                  </Badge>
+              )}
+              {activeTab === "activity" && (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Track all administrative actions and system events
+                  </p>
+                  <ActivityLogs />
                 </div>
-                <CustomerOrder/>
-                
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
+        </main>
       </div>    
 
-      {/* Delete Category Confirmation Dialog */}
-      
     </div>
     </>
   );

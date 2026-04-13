@@ -91,7 +91,7 @@ function InvalidDocumentView({
       </div>
  
       {/* Checklist */}
-      {errorTitle === "Not a prescription" && (
+      {errorTitle === "Not a prescription" ? (
         <div className="rounded-lg border bg-card p-4">
           <SectionLabel>What a valid prescription looks like</SectionLabel>
           <ul className="space-y-2 text-sm text-muted-foreground">
@@ -101,6 +101,22 @@ function InvalidDocumentView({
               "At least one medication with dosage",
               "Prescriber signature or DEA / license number",
               "Date of issue",
+            ].map((item) => (
+              <li key={item} className="flex gap-2 items-start">
+                <Check className="h-4 w-4 text-green-600 shrink-0 mt-0.5" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ): (
+        <div className="rounded-lg border bg-card p-4">
+          <SectionLabel>What a valid Medicine looks like</SectionLabel>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            {[
+              "Medication name and dosage",
+              "Manufacturer information",
+              "Make sure the medicine label is clear and not blurry",
             ].map((item) => (
               <li key={item} className="flex gap-2 items-start">
                 <Check className="h-4 w-4 text-green-600 shrink-0 mt-0.5" />

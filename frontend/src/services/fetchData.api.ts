@@ -1,6 +1,6 @@
 import { API_URL } from "./url.api";
 import { Category, Product, TotalInventoryProps, ActivityLogProps,
-   QueueTicket, AIOverview, 
+   QueueTicket, AIOverview, PaginatedProducts,
    customerOrderProps} from "./Props";
 
 export const fetchData = async <T>(endpoint: string): Promise<T> => {
@@ -25,8 +25,10 @@ export const fetchProductsByCategory = async (categoryid: number): Promise<Produ
   return fetchData<Product[]>(`${API_URL}/api/category/${categoryid}/products`);
 }
 
-export const fetchAllProducts = async(): Promise<Product[]> => {
-  return fetchData<Product[]>(`${API_URL}/api/products`);
+
+//fetch paginated products for admin dashboard
+export const fetchAllProducts = async(page: number, limit: number): Promise<PaginatedProducts> => {
+  return fetchData<PaginatedProducts>(`${API_URL}/api/products?page=${page}&limit=${limit}`);
 }
 
 export const fetchTotalInventory = async(): Promise<TotalInventoryProps[]> => {

@@ -142,15 +142,32 @@ export const getTotalTotalDashboardPage = async() => {
   return rows;
 }
 
-export const getAllProducts = async() => {
-  const { rows } = await db.query(`SELECT p.id, p.name, p.category, p.dosage, p.prescriptionrequired,
-      p.manufacturer, p.barcode, p.price, p.stock, p.status, pd.type, pd.description, pd.image_url AS image, pd.public_id, 
-      pd.active_ingredients, pd.side_effects, c.name as category_name FROM product p 
-      JOIN categories c ON p.category = c.id LEFT JOIN product_description pd ON p.id = pd.product_id WHERE p.status = 1
-       ORDER BY p.id DESC`);
-  
-  return rows;
-}
+export const getAllProducts = async (page, limit) => {
+  const offset = (page - 1) * limit;
+
+  const { rows } = await db.query(`
+    SELECT p.id, p.name, p.category, p.dosage, p.prescriptionrequired,
+    p.manufacturer, p.barcode, p.price, p.stock, p.status,
+    pd.type, pd.description, pd.image_url AS image, pd.public_id,
+    pd.active_ingredients, pd.side_effects,
+    c.name as category_name
+    FROM product p
+    JOIN categories c ON p.category = c.id
+    LEFT JOIN product_description pd ON p.id = pd.product_id
+    WHERE p.status = 1
+    ORDER BY p.id DESC
+    LIMIT $1 OFFSET $2
+  `, [limit, offset]);
+
+  const totalResult = await db.query(`
+    SELECT COUNT(*) FROM product WHERE status = 1
+  `);
+
+  return {
+    data: rows,
+    total: parseInt(totalResult.rows[0].count)
+  };
+};
 
 export const saveActivityLogs = async(ActivityLogsData) => {
   const { user_id, type, action, description, metadata } = ActivityLogsData;

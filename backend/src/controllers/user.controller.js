@@ -116,7 +116,7 @@ export const fetchTotalDashboard = async (req, res, next) => {
 
 export const fetchAllProducts = async (req, res, next) => {
     try {
-        const result = await userService.getAllProducts();
+        const result = await userService.getAllProducts(req.query.page, req.query.limit);
         res.status(200).json(result);
 
     } catch (error) {

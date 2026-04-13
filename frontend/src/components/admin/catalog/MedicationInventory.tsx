@@ -20,13 +20,19 @@ export const MedicationInventory = () => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const { userId } = useAuth();
 
-    useEffect(() => {
-        getActiveProducts();
-    }, [])
+    //pagination states
+    const [page, setPage] = useState(1);
+    const [limit] = useState(5);
+    const [total, setTotal] = useState(0);
 
-    const getActiveProducts = async() => {
-        const result = await fetchAllProducts();
-        setProducts(result);
+    useEffect(() => {
+        getActiveProducts(page);
+    }, [page])
+
+    const getActiveProducts = async(pageNumber = 1) => {
+        const result = await fetchAllProducts(pageNumber, limit);
+        setProducts(result.data);
+        setTotal(result.total);
     }
 
     const handleEdit = (product: Product) => {
@@ -48,13 +54,20 @@ export const MedicationInventory = () => {
 
             if (result.success) {
                 toast.success(result.message);
-                getActiveProducts();
+                getActiveProducts(page);
 
                 addActivityLog(userId, 5, 'Deleted Product', `${productToDelete.name} has been Deactivated.`,
                     {
                         product_name: result.product_name
                     }
                 )
+
+                const newTotal = total - 1;
+                const maxPage = Math.ceil(newTotal / limit) || 1;
+                const newPage = page > maxPage ? maxPage : page;
+
+                setTotal(newTotal);
+                setPage(newPage);
 
             } else {
                 toast.info(result.message);
@@ -80,60 +93,79 @@ export const MedicationInventory = () => {
                 <Plus className="h-4 w-4 mr-2" /> Add Medication
             </Button>
         </div>
-        <Table>
-            <TableHeader>
-            <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Dosage</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Stock</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-            </TableRow>
-            </TableHeader>
-            <TableBody>
-            {products.map((product) => (
-                <TableRow key={product.id}>
-                <TableCell>{product.name}</TableCell>
-                <TableCell>{product.category_name}</TableCell>
-                <TableCell>{product.dosage}</TableCell>
-                <TableCell>₱{product.price.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                <TableCell>
-                    <Badge variant={product.stock > 20 ? "default" : product.stock < 0 ? "destructive" : "destructive"}>
-                    {product.stock} units
-                    </Badge>
-                </TableCell>
-                <TableCell>
-                    {product.prescriptionrequired ? (
-                    <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300">
-                        Prescription
-                    </Badge>
-                    ) : (
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
-                        OTC
-                    </Badge>
-                    )}
-                </TableCell>
-                <TableCell>
-                    <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => handleEdit(product)}>
-                        <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={() => confirmDelete(product)}>
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
-                    </div>
-                </TableCell>
+        <div>
+            <Table>
+                <TableHeader>
+                <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Dosage</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>Stock</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
                 </TableRow>
-            ))}
-            </TableBody>
-        </Table>
+                </TableHeader>
+                <TableBody>
+                {products.map((product) => (
+                    <TableRow key={product.id}>
+                    <TableCell>{product.name}</TableCell>
+                    <TableCell>{product.category_name}</TableCell>
+                    <TableCell>{product.dosage}</TableCell>
+                    <TableCell>₱{product.price.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                    <TableCell>
+                        <Badge variant={product.stock > 20 ? "default" : product.stock < 0 ? "destructive" : "destructive"}>
+                        {product.stock} units
+                        </Badge>
+                    </TableCell>
+                    <TableCell>
+                        {product.prescriptionrequired ? (
+                        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300">
+                            Prescription
+                        </Badge>
+                        ) : (
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+                            OTC
+                        </Badge>
+                        )}
+                    </TableCell>
+                    <TableCell>
+                        <div className="flex gap-2">
+                        <Button size="sm" variant="outline" onClick={() => handleEdit(product)}>
+                            <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => confirmDelete(product)}>
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                        </div>
+                    </TableCell>
+                    </TableRow>
+                ))}
+                {products.length === 0 && (
+                    <TableRow>
+                    <TableCell colSpan={7} className="text-center py-4">
+                        No medications found. Please add new medications to the inventory.
+                    </TableCell>
+                    </TableRow>
+                )}
+                </TableBody>
+            </Table>
+            <div className="flex gap-2 mt-4 items-center text-sm text-gray-600">
+                <Button disabled={page === 1}
+                    onClick={() => setPage(prev => prev - 1)} >
+                    Previous </Button>
+                <Button disabled={page * limit >= total}
+                    onClick={() => setPage(prev => prev + 1)}>
+                    Next </Button>
+                <p>Showing {Math.min(page * limit, total)} of {total}</p>
+            </div>
+        </div>
+        
         {isDialogOpen  && (
             <EditMedication 
             product={editingProduct} 
             onClose={() => { setIsDialogOpen(false); setEditingProduct(null); }}
-            getActiveProducts={() => getActiveProducts()}
+            getActiveProducts={() => getActiveProducts(page)}
             />
         )}
         {/* Delete Confirmation Dialog */}

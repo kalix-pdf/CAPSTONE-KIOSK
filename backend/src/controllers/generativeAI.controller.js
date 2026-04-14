@@ -4,11 +4,39 @@ import dotenv from 'dotenv';
 import * as fs from "node:fs";
 import { getProduct } from '../services/product.service.js';
 import { saveOCRImage } from "../services/user.service.js"
+import db from "../config/db.js";
 
 dotenv.config();
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const open_ai = new OpenAI({ apiKey: process.env.OPEN_AI_API_KEY });
+
+//function to check if scanned prescription is already existed on the database
+async function checkExistingScannedPrescription(patient_name, date_issued) {
+    const existing = await db.query(
+        `SELECT id FROM scanned_prescription WHERE LOWER(patient_name) LIKE LOWER($1) OR rx_date = $2`,
+        [`%${patient_name}%`, date_issued]
+    );
+
+    if (existing.rowCount > 0) {
+        console.log(`Existing scanned prescription found for ${patient_name} on ${date_issued}`);
+        return true;
+    }
+    return false;
+}
+
+async function addPrescriberData(patient_name, date_issued, medications) {
+     const add_prescriber_data = await db.query(
+        `INSERT INTO scanned_prescription(patient_name, rx_date, metadata) VALUES($1, $2, $3) RETURNING id`,
+        [patient_name, date_issued, JSON.stringify(medications)]
+    );
+
+    if (add_prescriber_data.rowCount === 0) {
+        throw new Error("Failed to save scanned prescription data");
+    }
+
+}
+
 
 export async function AIPoweredProductDetails (req, res) {
     try {
@@ -209,36 +237,33 @@ export async function PrescriptionAIPowered (req, res) {
         });
         const text = response.choices[0].message.content.trim();
 
-        //gemini ai 
-        //  const response = await ai.models.generateContent({
-        //     model: "gemini-2.5-flash",
-        //     contents: [
-        //         {
-        //             inlineData: {
-        //                 mimeType: "image/jpeg",
-        //                 data: base64ImageFile,
-        //             },
-        //         },
-        //         { text: prompt }
-        //     ],
-        // });
-        // const text = response.text.trim();
-        
         const clean = text.replace(/```json|```/g, "").trim();
-        const parsed = JSON.parse(clean);
-
-        const recognizedMeds = await Promise.all(
-            (Array.isArray(parsed?.['RecognizedMeds']) ? parsed['RecognizedMeds'] : []).map(med => getProduct(med))
-        );
+        const jsonMatch = clean.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error("No JSON object found in response");
         
-        const flatResults = recognizedMeds.flat();
+        const parsed = JSON.parse(jsonMatch[0]);
+        
+        if (parsed.Valid) {
+            const recognizedMeds = await Promise.all(
+                (Array.isArray(parsed?.['RecognizedMeds']) ? parsed['RecognizedMeds'] : []).map(med => getProduct(med))
+            );
+            const flatResults = recognizedMeds.flat();
+        
+            const checkExisting = await checkExistingScannedPrescription(parsed.ExtractedText.PatientInfo, parsed.ExtractedText.DateIssued);
+        
+            if (flatResults.length === 0) {
+                return res.status(200).json({scanned_id: scannedID, extractedText: parsed, RecognizedMeds: [],
+                    message: "No available medicine found" });
+            } else {
+                if (!checkExisting) {
+                    await addPrescriberData(parsed.ExtractedText.PatientInfo, parsed.ExtractedText.DateIssued, flatResults);
+                }
+            }
 
-        if (flatResults.length === 0) {
-            return res.status(200).json({scanned_id: scannedID, extractedText: parsed, RecognizedMeds: [],
-                message: "No available medicine found" });
-        }
+            return res.status(200).json({scanned_id: scannedID, extractedText: parsed, RecognizedMeds: flatResults });
+        }        
 
-        return res.status(200).json({scanned_id: scannedID, extractedText: parsed, RecognizedMeds: flatResults });
+        return res.status(200).json({scanned_id: scannedID, extractedText: parsed, RecognizedMeds: [] });
 
     //   const hardcodedResponse = {
     //     extractedText: {
@@ -327,6 +352,22 @@ export async function PrescriptionAIPowered (req, res) {
     
 }
 
+    //gemini ai 
+    //             "PatientInfo": "patient name and/or date of birth if visible, else null",
+        //  const response = await ai.models.generateContent({
+        //     model: "gemini-2.5-flash",
+        //     contents: [
+        //         {
+        //             inlineData: {
+        //                 mimeType: "image/jpeg",
+        //                 data: base64ImageFile,
+        //             },
+        //         },
+        //         { text: prompt }
+        //     ],
+        // });
+        // const text = response.text.trim();
+        
 
 export async function MedinceScannerAIPowered (req, res) {
     const filePath = req.file.path;

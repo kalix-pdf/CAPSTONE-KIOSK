@@ -25,6 +25,10 @@ export const handleCheckout = async (cart: CartItem[], phoneNumber: string, scan
             throw new Error("Failed to create order. Please try again.");
         }
 
+        if (result.success === false) {
+            throw new Error(result.message || "Failed to create order. Please try again.");
+        }
+
         return {
             QueueNumber: result.QueueNumber,
             phoneNumber: phoneNumber,

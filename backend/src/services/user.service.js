@@ -29,26 +29,88 @@ export const getProductsByCategoryId = async (categoryId) => {
   return rows;
 }
 
-export const createOrder = async (orderData) => {
+//check existing scanned prescription by patient name and date issued
+export const checkExistingScannedPrescription = async(scanned_id) => {
+  const query = `SELECT id FROM orders WHERE image_data_id = $1`;
+  const { rows } = await db.query(query, [scanned_id]);
 
+  return rows.length > 0 ? true : false;
+}
+
+//check if reaching the maximum quantity of medicine ordered for a specific product in an order
+export const checkMaxQuantityOrdered = async(orderId, productId, quantity) => {
+  const { rows } = await db.query(`SELECT total_ordered_medicine_quantity FROM order_items WHERE order_id = $1 AND product_id = $2`, [orderId, productId]);
+  const currentTotalOrderedQuantity = rows.length > 0 ? rows[0].total_ordered_medicine_quantity : 0;
+
+  const totalLimitMedicineQuantity = `SELECT total_limit_medicine_quantity FROM product_description WHERE product_id = $1`;
+  const { rows: limitRows } = await db.query(totalLimitMedicineQuantity, [productId]);
+  const totalLimit = limitRows[0].total_limit_medicine_quantity;
+
+  if (totalLimit === 0) {
+    return false;
+  }
+
+  if (currentTotalOrderedQuantity + quantity > totalLimit) {
+    return true;
+  }
+
+  if (currentTotalOrderedQuantity >= totalLimit) {
+    return true;
+  }
+
+  return false;
+
+}
+
+export const createOrder = async (orderData) => {
+  console.log("Received order data:", orderData);
   const { items, phone_number, total_amount, scannedID, extractedText } = orderData;
   const client = await db.connect();
 
   try {
     await client.query("BEGIN"); 
-    const orderInsertQuery = `INSERT INTO orders (phone_number, status, total_amount, image_data_id) VALUES ($1, 1, $2, $3) RETURNING id`;
-    const orderResult = await client.query(orderInsertQuery, [phone_number, total_amount, scannedID]);
-    const orderId = orderResult.rows[0].id;
-
-    for (const item of items) {
-      const orderItemsInsertQuery = `INSERT INTO order_items (order_id, product_id, quantity) VALUES ($1, $2, $3)`;
-      await client.query(orderItemsInsertQuery, [orderId, item.product_id, item.quantity]);
-    }
     
+    const existing = await checkExistingScannedPrescription(scannedID);
+    let orderId;
 
+    if (existing) {
+      const updateOrderQuery = `UPDATE orders SET phone_number = $1, total_amount = $2, status = 1 WHERE image_data_id = $3 RETURNING id`;
+      const updateResult = await client.query(updateOrderQuery, [phone_number, total_amount, scannedID]);
+      orderId = updateResult.rows[0].id;
+
+      for (const item of items) {
+        if (await checkMaxQuantityOrdered(orderId, item.product_id, item.quantity)) {
+          await client.query("ROLLBACK");
+          return { success: false, message: `Maximum quantity for the ${item.item_name} has been reached. You cannot add it to the order.` };
+        }
+        
+        const updateItemQuery = `UPDATE order_items SET total_ordered_medicine_quantity = total_ordered_medicine_quantity + $1, 
+          quantity = $2 WHERE order_id = $3 AND product_id = $4`;
+        const result = await client.query(updateItemQuery, [item.quantity, item.quantity, orderId, item.product_id]);
+
+        if (result.rowCount === 0) {
+          const insertItemQuery = `INSERT INTO order_items (order_id, product_id, quantity, total_ordered_medicine_quantity) 
+            VALUES ($1, $2, $3, $4)`;
+          await client.query(insertItemQuery, [orderId, item.product_id, item.quantity, item.quantity]);
+        }
+      }
+
+    } else {
+      const orderInsertQuery = `INSERT INTO orders (phone_number, status, total_amount, image_data_id) VALUES ($1, 1, $2, $3) RETURNING id`;
+      const orderResult = await client.query(orderInsertQuery, [phone_number, total_amount, scannedID]);
+      orderId = orderResult.rows[0].id;
+  
+      for (const item of items) {
+        const orderItemsInsertQuery = `INSERT INTO order_items (order_id, product_id, quantity, total_ordered_medicine_quantity) VALUES ($1, $2, $3, $4)`;
+        await client.query(orderItemsInsertQuery, [orderId, item.product_id, item.quantity, item.quantity]);
+      }
+
+    }    
+
+    //update the scanned image from the database to add the extracted text, patient info and and medicine dosage
     if (extractedText) {
-      const ScannedImage = `UPDATE scanned_image SET extracted_text = $1 WHERE id = $2`;
-      await client.query(ScannedImage, [extractedText, scannedID])
+      const ScannedImage = `UPDATE scanned_image SET extracted_text = $1, ordered_medicine = $2 WHERE id = $3`;
+      await client.query(ScannedImage, [extractedText, JSON.stringify(items.map(item => item.product_id)), scannedID])
     }
 
     await client.query("COMMIT");
@@ -77,14 +139,14 @@ export const createOrder = async (orderData) => {
 }
 
 
-export const saveOCRImage = async (imageUrl, ocrTypeNum) => {
+export const saveOCRImage = async (imageUrl, ocrTypeNum, patientInfo, dateIssued) => {
   const client = await db.connect();
   
   try {
     await client.query("BEGIN");
     
-    const query = `INSERT INTO scanned_image (image_url, ocr_type) VALUES ($1, $2) RETURNING id`;
-    const { rows } = await client.query(query, [imageUrl, ocrTypeNum]);
+    const query = `INSERT INTO scanned_image (image_url, ocr_type, patient_name, rx_date) VALUES ($1, $2, $3, $4) RETURNING id`;
+    const { rows } = await client.query(query, [imageUrl, ocrTypeNum, patientInfo, dateIssued]);
     
     await client.query("COMMIT");
     return rows[0].id;
@@ -224,7 +286,7 @@ export const getOrders = async(statuses) => {
             LEFT JOIN product p ON p.id = oi.product_id 
             LEFT JOIN scanned_image si ON si.id = o.image_data_id 
             WHERE o.status = ANY($1::int[])
-            GROUP BY o.id, o.queue_number, si.image_url, si.extracted_text, si.accuracy
+            GROUP BY o.id, o.queue_number, si.image_url, si.extracted_text
             ORDER BY o.created_at ASC`;
   
   const { rows } = await db.query(query, [statuses]);
@@ -247,13 +309,12 @@ export const getOrdersById = async(id) => {
                 )) AS items,
               json_build_object(
                 'image_url', si.image_url, 
-                'extractedText', si.extracted_text, 
-                'accuracy', si.accuracy
+                'extractedText', si.extracted_text
               ) AS prescriptionData
             FROM orders o LEFT JOIN order_items oi ON o.id = oi.order_id 
             LEFT JOIN product p ON p.id = oi.product_id 
             LEFT JOIN scanned_image si ON si.id = o.image_data_id WHERE o.id = $1
-            GROUP BY o.id, o.queue_number, si.image_url, si.extracted_text, si.accuracy`;
+            GROUP BY o.id, o.queue_number, si.image_url, si.extracted_text`;
   
   const { rows } = await db.query(query, [orderID]);
 

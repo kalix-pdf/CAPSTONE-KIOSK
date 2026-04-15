@@ -207,8 +207,10 @@ export const Cart = () => {
             <QueueTicket
                 QueueNumber={ticketData.QueueNumber}
                 phoneNumber={ticketData.phoneNumber}
-                orderID={ticketData.orderID}
-                orderItems={ticketData.orderItems}/>
+                // orderID={ticketData.orderID}
+                orderItems={ticketData.orderItems}
+                totalAmount={ticketData.totalAmount}
+                />
         )}
     </>
     );

@@ -4,7 +4,7 @@ import { QueueTicketProps } from "./QueueTicketProps";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export const QueueTicket = ({ QueueNumber, phoneNumber, orderID, orderItems, totalAmount }: QueueTicketProps) => {
+export const QueueTicket = ({ QueueNumber, phoneNumber, orderItems, totalAmount }: QueueTicketProps) => {
   const [showTicketDialog, setShowTicketDialog] = useState(true);
   const [countdown, setCountdown] = useState(8);
   const navigate = useNavigate();

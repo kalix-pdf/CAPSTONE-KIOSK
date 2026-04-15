@@ -14,27 +14,15 @@ const open_ai = new OpenAI({ apiKey: process.env.OPEN_AI_API_KEY });
 //function to check if scanned prescription is already existed on the database
 async function checkExistingScannedPrescription(patient_name, date_issued) {
     const existing = await db.query(
-        `SELECT id FROM scanned_prescription WHERE LOWER(patient_name) LIKE LOWER($1) OR rx_date = $2`,
+        `SELECT id FROM scanned_image WHERE LOWER(patient_name) LIKE LOWER($1) OR rx_date = $2`,
         [`%${patient_name}%`, date_issued]
     );
 
     if (existing.rowCount > 0) {
-        console.log(`Existing scanned prescription found for ${patient_name} on ${date_issued}`);
-        return true;
+        // console.log(`Existing scanned prescription found for ${patient_name} on ${date_issued}`);
+        return existing.rows[0].id;
     }
-    return false;
-}
-
-async function addPrescriberData(patient_name, date_issued, medications) {
-     const add_prescriber_data = await db.query(
-        `INSERT INTO scanned_prescription(patient_name, rx_date, metadata) VALUES($1, $2, $3) RETURNING id`,
-        [patient_name, date_issued, JSON.stringify(medications)]
-    );
-
-    if (add_prescriber_data.rowCount === 0) {
-        throw new Error("Failed to save scanned prescription data");
-    }
-
+    return 0;
 }
 
 
@@ -164,8 +152,6 @@ export async function PrescriptionAIPowered (req, res) {
         encoding: "base64",
     });
 
-    const scannedID = await saveOCRImage(filePath, 0);
-
     try {
         const prompt = `You are a highly trained medical and pharmaceutical document analyst with expertise in verifying prescription authenticity.
         //         Your task has TWO phases:
@@ -242,6 +228,7 @@ export async function PrescriptionAIPowered (req, res) {
         if (!jsonMatch) throw new Error("No JSON object found in response");
         
         const parsed = JSON.parse(jsonMatch[0]);
+        let scannedID = 0;
         
         if (parsed.Valid) {
             const recognizedMeds = await Promise.all(
@@ -251,13 +238,15 @@ export async function PrescriptionAIPowered (req, res) {
         
             const checkExisting = await checkExistingScannedPrescription(parsed.ExtractedText.PatientInfo, parsed.ExtractedText.DateIssued);
         
+            if (checkExisting !== 0) {
+                scannedID = checkExisting;
+            } else {
+                scannedID = await saveOCRImage(filePath, 0, parsed.ExtractedText.PatientInfo, parsed.ExtractedText.DateIssued);
+            }
+
             if (flatResults.length === 0) {
                 return res.status(200).json({scanned_id: scannedID, extractedText: parsed, RecognizedMeds: [],
                     message: "No available medicine found" });
-            } else {
-                if (!checkExisting) {
-                    await addPrescriberData(parsed.ExtractedText.PatientInfo, parsed.ExtractedText.DateIssued, flatResults);
-                }
             }
 
             return res.status(200).json({scanned_id: scannedID, extractedText: parsed, RecognizedMeds: flatResults });

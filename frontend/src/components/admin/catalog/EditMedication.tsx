@@ -33,6 +33,7 @@ export const EditMedication = ( { product, onClose, getActiveProducts}: { produc
             stock: product?.stock ?? 0,
             type: product?.type ?? 0,
             active_ingredients: product?.active_ingredients ?? "",
+            total_limit_medicine_quantity: product?.total_limit_medicine_quantity ?? 0,
             // description: product?.description ?? "",
             // side_effects: product?.side_effects ?? "",
           });
@@ -250,6 +251,13 @@ export const EditMedication = ( { product, onClose, getActiveProducts}: { produc
                                 <Input id="stock" type="number" min="0" value={formData.stock || 0}
                                     onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })}
                                     placeholder="e.g., 45" required />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="maximum_limit">Maximum Limit</Label>
+                                <Input id="maximum_limit" type="number" min="0" value={formData.total_limit_medicine_quantity || 0}
+                                    onChange={(e) => setFormData({ ...formData, total_limit_medicine_quantity: parseInt(e.target.value) || 0 })}
+                                    placeholder="e.g., 100" required />
                             </div>
                         </div>
                     </div>

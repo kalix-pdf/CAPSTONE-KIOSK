@@ -3,8 +3,9 @@ import bcrypt from "bcrypt";
 
 
 export const updateProduct = async(productData, image_url, public_id) => {
+    console.log("Received product data for update:", productData);
     const { id, name, dosage, prescriptionrequired, manufacturer, barcode, price, 
-            stock, type, active_ingredients } = productData
+            stock, type, active_ingredients, total_limit_medicine_quantity } = productData
         
     if (!id) throw new Error("Product ID is required");
 
@@ -25,8 +26,8 @@ export const updateProduct = async(productData, image_url, public_id) => {
 
         if (id) {
             const descriptipQuery = `UPDATE product_description SET active_ingredients = $1, 
-                                    type = $2, image_url = $3, public_id = $4 WHERE product_id = $5`;
-            const descriptionResult = await client.query(descriptipQuery, [active_ingredients, type, image_url, public_id, id]);
+                                    type = $2, image_url = $3, public_id = $4, total_limit_medicine_quantity = $5 WHERE product_id = $6`;
+            const descriptionResult = await client.query(descriptipQuery, [active_ingredients, type, image_url, public_id, total_limit_medicine_quantity, id]);
         
             if (descriptionResult.rowCount === 0) {
                 await client.query("ROLLBACK");
@@ -50,7 +51,7 @@ export const updateProduct = async(productData, image_url, public_id) => {
 
 export const addProduct = async(newProduct, image_url, public_id) => {
     const { name, dosage, prescriptionrequired, manufacturer, barcode, price, active_ingredients,
-            stock, type  } = newProduct
+            stock, type, total_limit_medicine_quantity } = newProduct
 
     const isEmpty = (val) => val === null || val === undefined || val === '';
 
@@ -77,10 +78,10 @@ export const addProduct = async(newProduct, image_url, public_id) => {
         const product_id = result.rows[0].id;
 
         if (product_id) {
-            const descriptionQuery = `INSERT INTO product_description(product_id, active_ingredients, type, image_url, public_id)
-                                     VALUES($1, $2, $3, $4, $5)`; 
+            const descriptionQuery = `INSERT INTO product_description(product_id, active_ingredients, type, image_url, public_id, total_limit_medicine_quantity)
+                                     VALUES($1, $2, $3, $4, $5, $6)`; 
                 
-            const descriptionResult = await client.query(descriptionQuery, [product_id, active_ingredients, type, image_url, public_id]);
+            const descriptionResult = await client.query(descriptionQuery, [product_id, active_ingredients, type, image_url, public_id, total_limit_medicine_quantity]);
             
             if (descriptionResult.rowCount === 0) {
                 await client.query("ROLLBACK");

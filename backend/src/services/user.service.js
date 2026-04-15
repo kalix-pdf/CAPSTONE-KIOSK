@@ -210,8 +210,8 @@ export const getAllProducts = async (page, limit) => {
   const { rows } = await db.query(`
     SELECT p.id, p.name, p.category, p.dosage, p.prescriptionrequired,
     p.manufacturer, p.barcode, p.price, p.stock, p.status,
-    pd.type, pd.description, pd.image_url AS image, pd.public_id,
-    pd.active_ingredients, pd.side_effects,
+    pd.type, pd.image_url AS image, pd.public_id,
+    pd.active_ingredients, pd.total_limit_medicine_quantity, pd.side_effects,
     c.name as category_name
     FROM product p
     JOIN categories c ON p.category = c.id

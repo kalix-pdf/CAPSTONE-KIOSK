@@ -23,6 +23,7 @@ export interface Product {
   stock: number;
   active_ingredients: string;
   // side_effects: string;
+  total_limit_medicine_quantity?: number;
   type: number;
   category_name: string;
 }

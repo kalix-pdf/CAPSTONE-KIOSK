@@ -232,16 +232,35 @@ export async function PrescriptionAIPowered (req, res) {
         
         if (parsed.Valid) {
             const recognizedMeds = await Promise.all(
-                (Array.isArray(parsed?.['RecognizedMeds']) ? parsed['RecognizedMeds'] : []).map(med => getProduct(med))
+                (Array.isArray(parsed?.['RecognizedMeds']) ? parsed['RecognizedMeds'] : []).map(
+                    (med, index) => getProduct(med).then(products => ({
+                        products,
+                        prescriptionDetail: parsed.ExtractedText.Medications?.[index] ?? {}
+                    }))
+                )
             );
-            const flatResults = recognizedMeds.flat();
+
+            // Build a flat list pairing each product with its prescription details
+            const pairedResults = recognizedMeds.flatMap(({ products, prescriptionDetail }) =>
+                products.map(product => ({
+                    product_id: product.id,
+                    product_name: product.name,
+                    quantity: prescriptionDetail.Quantity ?? null,
+                    refills: prescriptionDetail.Refills ?? 0
+                }))
+            );
         
             const checkExisting = await checkExistingScannedPrescription(parsed.ExtractedText.PatientInfo, parsed.ExtractedText.DateIssued);
-        
+            const flatResults = recognizedMeds.flatMap(({ products }) => products);
+
             if (checkExisting !== 0) {
                 scannedID = checkExisting;
-            } else {
-                scannedID = await saveOCRImage(filePath, 0, parsed.ExtractedText.PatientInfo, parsed.ExtractedText.DateIssued);
+            }
+
+            if (pairedResults.length > 0 && checkExisting === 0) {
+                scannedID = await saveOCRImage(filePath, 0, parsed.ExtractedText.PatientInfo, 
+                    parsed.ExtractedText.DateIssued, pairedResults
+                );
             }
 
             if (flatResults.length === 0) {

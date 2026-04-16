@@ -44,26 +44,39 @@ export const checkMaxQuantityOrdered = async(orderId, productId, quantity) => {
 
   const totalLimitMedicineQuantity = `SELECT total_limit_medicine_quantity FROM product_description WHERE product_id = $1`;
   const { rows: limitRows } = await db.query(totalLimitMedicineQuantity, [productId]);
+  
   const totalLimit = limitRows[0].total_limit_medicine_quantity;
 
-  if (totalLimit === 0) {
+  const { rows: scannedRows } = await db.query(`SELECT elem->>'quantity' AS prescribed_quantity, 
+      elem->>'refills' AS refills FROM scanned_image, LATERAL jsonb_array_elements(ordered_medicine) AS elem 
+      WHERE (elem->>'product_id')::int = $1 ORDER BY id DESC LIMIT 1`, [productId]);
+
+  const prescribedQuantity = parseInt(scannedRows[0].prescribed_quantity ?? '0', 10);
+  const refills = parseInt(scannedRows[0].refills ?? '0', 10);
+
+  const projectedTotal = currentTotalOrderedQuantity + quantity;
+  console.log("prescribed quantity:", prescribedQuantity);
+  console.log("refills:", refills);
+  console.log("current total ordered quantity:", currentTotalOrderedQuantity);
+  console.log("new order quantity:", quantity);
+  console.log("projected total:", projectedTotal);
+
+  if (prescribedQuantity > 0) {
+    const totalAllowedQuantity = prescribedQuantity * (1 + refills);
+    console.log("total allowed quantity (prescription):", totalAllowedQuantity);
+
+    if (projectedTotal > totalAllowedQuantity) return true;
     return false;
   }
 
-  if (currentTotalOrderedQuantity + quantity > totalLimit) {
-    return true;
-  }
-
-  if (currentTotalOrderedQuantity >= totalLimit) {
-    return true;
-  }
+  if (totalLimit === 0) return false;
+  if (totalLimit > 0 && projectedTotal > totalLimit) return true; 
 
   return false;
-
 }
 
 export const createOrder = async (orderData) => {
-  console.log("Received order data:", orderData);
+  // console.log("Received order data:", orderData);
   const { items, phone_number, total_amount, scannedID, extractedText } = orderData;
   const client = await db.connect();
 
@@ -139,14 +152,25 @@ export const createOrder = async (orderData) => {
 }
 
 
-export const saveOCRImage = async (imageUrl, ocrTypeNum, patientInfo, dateIssued) => {
+export const saveOCRImage = async (imageUrl, ocrTypeNum, patientInfo, dateIssued, matchedProducts = []) => {
   const client = await db.connect();
-  
+  console.log(matchedProducts);
   try {
     await client.query("BEGIN");
     
-    const query = `INSERT INTO scanned_image (image_url, ocr_type, patient_name, rx_date) VALUES ($1, $2, $3, $4) RETURNING id`;
-    const { rows } = await client.query(query, [imageUrl, ocrTypeNum, patientInfo, dateIssued]);
+    const query = `INSERT INTO scanned_image (image_url, ocr_type, patient_name, rx_date, ordered_medicine) 
+      VALUES ($1, $2, $3, $4, $5::jsonb) RETURNING id`;
+
+    const medicationJson = JSON.stringify(
+      matchedProducts.map(product => ({
+        product_id: product.product_id, 
+        name: product.product_name, 
+        quantity: product.quantity ?? 0,
+        refills: product.refills ?? 0,
+      }))
+    );
+
+    const { rows } = await client.query(query, [imageUrl, ocrTypeNum, patientInfo, dateIssued, medicationJson]);
     
     await client.query("COMMIT");
     return rows[0].id;

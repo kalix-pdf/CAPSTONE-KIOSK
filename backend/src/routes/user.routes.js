@@ -6,7 +6,7 @@ from "../controllers/user.controller.js";
 import { ProductUpdate, AddNewProduct, ProductDeactivate } from "../controllers/product.controller.js";
 import { CategoryAdd, categoryDelete } from "../controllers/category.controller.js";
 import { AIPoweredProductDetails, PrescriptionAIPowered, MedinceScannerAIPowered } from "../controllers/generativeAI.controller.js";
-
+import { printReceipt } from "../controllers/print.controller.js";
 
 import path from 'path';
 import multer from 'multer';
@@ -57,6 +57,9 @@ router.post("/ocr/process", upload.single('prescription'), processOCRImage);
 //OCR AI powered
 router.post("/ocr/product/scan", upload.single('medicine'), MedinceScannerAIPowered)
 router.post("/ocr/readPrescription", upload.single('prescription'), PrescriptionAIPowered);
+
+//print receipt
+router.post("/print", printReceipt);
 
 //admin
 router.post("/admin/login", adminLogin);

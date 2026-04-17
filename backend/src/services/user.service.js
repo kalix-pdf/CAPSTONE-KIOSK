@@ -55,11 +55,6 @@ export const checkMaxQuantityOrdered = async(orderId, productId, quantity) => {
   const refills = parseInt(scannedRows[0].refills ?? '0', 10);
 
   const projectedTotal = currentTotalOrderedQuantity + quantity;
-  console.log("prescribed quantity:", prescribedQuantity);
-  console.log("refills:", refills);
-  console.log("current total ordered quantity:", currentTotalOrderedQuantity);
-  console.log("new order quantity:", quantity);
-  console.log("projected total:", projectedTotal);
 
   if (prescribedQuantity > 0) {
     const totalAllowedQuantity = prescribedQuantity * (1 + refills);
@@ -121,9 +116,9 @@ export const createOrder = async (orderData) => {
     }    
 
     //update the scanned image from the database to add the extracted text, patient info and and medicine dosage
-    if (extractedText) {
-      const ScannedImage = `UPDATE scanned_image SET extracted_text = $1, ordered_medicine = $2 WHERE id = $3`;
-      await client.query(ScannedImage, [extractedText, JSON.stringify(items.map(item => item.product_id)), scannedID])
+    if (extractedText && scannedID > 0) {
+      const ScannedImage = `UPDATE scanned_image SET extracted_text = $1 WHERE id = $2`;
+      await client.query(ScannedImage, [extractedText, scannedID])
     }
 
     await client.query("COMMIT");
@@ -151,6 +146,26 @@ export const createOrder = async (orderData) => {
   }
 }
 
+export const updateOCRImageData = async(scannedID, matchedProducts = []) => {
+  const query = `UPDATE scanned_image SET ordered_medicine = $1 WHERE id = $2`;
+
+  const medicationJson = JSON.stringify(
+      matchedProducts.map(product => ({
+        product_id: product.product_id, 
+        name: product.product_name, 
+        quantity: product.quantity ?? 0,
+        refills: product.refills ?? 0,
+      }))
+    );
+    
+  const result = await db.query(query, [medicationJson, scannedID]);
+
+  if (result.rowCount === 0) {
+    throw new Error("Failed to update scanned image data");
+  }
+
+  return scannedID;
+}
 
 export const saveOCRImage = async (imageUrl, ocrTypeNum, patientInfo, dateIssued, matchedProducts = []) => {
   const client = await db.connect();

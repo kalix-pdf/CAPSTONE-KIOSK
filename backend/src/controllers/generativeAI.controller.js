@@ -3,7 +3,7 @@ import OpenAI from "openai";
 import dotenv from 'dotenv';
 import * as fs from "node:fs";
 import { getProduct } from '../services/product.service.js';
-import { saveOCRImage } from "../services/user.service.js"
+import { saveOCRImage, updateOCRImageData } from "../services/user.service.js"
 import db from "../config/db.js";
 
 dotenv.config();
@@ -254,7 +254,7 @@ export async function PrescriptionAIPowered (req, res) {
             const flatResults = recognizedMeds.flatMap(({ products }) => products);
 
             if (checkExisting !== 0) {
-                scannedID = checkExisting;
+                scannedID = await updateOCRImageData(checkExisting, pairedResults);
             }
 
             if (pairedResults.length > 0 && checkExisting === 0) {

@@ -16,7 +16,8 @@ import { QueueTicket } from "../order/QueueTicket";
 
 export const Cart = () => {
     const { showKeyboard, setShowKeyboard, keyboardField, setKeyboardField, keyboardValue, setKeyboardValue } = keyboardActivate();
-    const { cart, removeFromCart, updateQuantity, clearCart, scannedID, extractedText } = useCart();
+    const { cart, removeFromCart, updateQuantity, clearCart, 
+        setScannedID, scannedID, extractedText } = useCart();
     const [ticketData, setTicketData] = useState<QueueTicketProps | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [phoneNumber] = useState("");
@@ -178,7 +179,7 @@ export const Cart = () => {
             <Button onClick={async () => { try { setIsLoading(true);
                 const ticketData = await handleCheckout(cart, keyboardValue, scannedID, extractedText);
                 setTicketData(ticketData);
-                clearCart(); } catch (error) { 
+                clearCart(); setScannedID(0); } catch (error) { 
                     toast.error(error instanceof Error ? error.message : "Checkout failed please try again later"); } }} 
                 className={`w-full ${getTextSizeClass("text-base")}`}
                 size="lg" disabled={ cart.length === 0 ||  cart.some(item => {

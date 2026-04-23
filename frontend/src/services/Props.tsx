@@ -53,6 +53,11 @@ export interface ActivityLogProps {
     category_name: string;
 }
 
+export interface ActivityLogsResponse {
+    data: ActivityLogProps[];
+    hasMore: boolean;
+}
+
 export interface QueueDisplay {
   order_id: number;
   queue_number: number;

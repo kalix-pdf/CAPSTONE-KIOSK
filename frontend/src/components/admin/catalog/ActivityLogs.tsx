@@ -5,29 +5,33 @@ import { Badge } from "../../ui/badge";
 import { ActivityLogProps } from "../../../services/Props";
 import { fetchActivityLogs } from "../../../services/fetchData.api"
 import { RenderActivityLogCard } from "./RenderActivityLogCard";
-// import { ActivityDialog } from "./ActivityDialog";
 
 export const ActivityLogs = () => {
     const [activityLogFilter, setActivityLogFilter] = useState<'added' | 'edited' | 'deleted'>('added');
     const [activityLogs, setActivityLogs] = useState<ActivityLogProps[] | null>(null);
     const [loading, setLoading] = useState(true);
-    // const [selectedActivity, setSelectedActivity] = useState<ActivityLogProps | null>(null);
-    // const [isActivityDetailOpen, setIsActivityDetailOpen] = useState(false);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const limit = 3;
 
     useEffect(() => {
-        fetchActivityLogs()
-          .then(res => {
-            setActivityLogs(res); 
-          })
-          .catch(console.error)
-          .finally(() => setLoading(false));
-      }, []); 
+        setLoading(true);
 
-    if (loading) return <p>Loading...</p>;
+        fetchActivityLogs(page, limit, activityLogFilter)
+            .then(res => {
+            setActivityLogs(res.data);
+            setHasMore(res.hasMore);
+            })
+            .catch(console.error)
+            .finally(() => setLoading(false));
+
+        }, [page, activityLogFilter]);
 
     return (
         <>
-        <Tabs value={activityLogFilter} onValueChange={(value: any) => setActivityLogFilter(value as any)}>
+        <Tabs value={activityLogFilter} onValueChange={(value: any) => {
+            setActivityLogFilter(value);
+            setPage(1);}}>
             <TabsList className="grid w-full grid-cols-4 max-w-2xl">
             <TabsTrigger value="added">
                 <Plus className="h-4 w-4 mr-2" />
@@ -45,9 +49,8 @@ export const ActivityLogs = () => {
 
             <TabsContent value="added" className="mt-4">
             {(() => {
-                const filteredLogs = activityLogs?.filter(log => 
-                    log.type === 1 || log.type === 2 );
-
+                const filteredLogs = activityLogs;
+                
                 return (
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
@@ -83,8 +86,7 @@ export const ActivityLogs = () => {
 
             <TabsContent value="edited" className="mt-4">
             {(() => {
-                const filteredLogs = activityLogs?.filter(log => 
-                    log.type === 3 || log.type === 4 );
+                const filteredLogs = activityLogs;
                     
                 return (
                 <div className="space-y-4">
@@ -121,8 +123,7 @@ export const ActivityLogs = () => {
 
             <TabsContent value="deleted" className="mt-4">
             {(() => {
-                const filteredLogs = activityLogs?.filter(log => 
-                    log.type === 5 || log.type === 6)
+                const filteredLogs = activityLogs;
                     
                 return (
                 <div className="space-y-4">
@@ -156,12 +157,20 @@ export const ActivityLogs = () => {
                 );
             })()}
             </TabsContent>
+            <div className="flex justify-between items-center mt-4">
+                <button onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                    className="px-3 py-1 border rounded disabled:opacity-50"
+                    disabled={page === 1} >
+                    Previous </button>
+                <span className="text-sm">Page {page}</span>
+                <button
+                    onClick={() => setPage(prev => prev + 1)}
+                    className="px-3 py-1 border rounded disabled:opacity-50"
+                    disabled={!hasMore}>
+                    Next</button>
+                </div>
         </Tabs>
         
-        {/* <ActivityDialog 
-            selectedActivity={selectedActivity}
-            isActivityDetailOpen={isActivityDetailOpen}
-            setIsActivityDetailOpen={setIsActivityDetailOpen}/> */}
         </>
     );
 }

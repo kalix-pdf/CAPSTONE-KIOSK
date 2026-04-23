@@ -1,3 +1,4 @@
+import { type } from "node:os";
 import db from "../config/db.js";
 import bcrypt from "bcrypt";
 
@@ -295,15 +296,45 @@ export const saveActivityLogs = async(ActivityLogsData) => {
 
 }
 
-export const getActivityLogs = async() => {
-  const queryActivityLogs = `SELECT a.*, p.name as product_name, c.name as category_name 
-            FROM activity_logs a LEFT JOIN product p ON p.id = (a.metadata->>'productId')::int
-            LEFT JOIN categories c ON c.id = p.category ORDER BY a.date DESC`;
+export const getActivityLogs = async (page, limit, filter) => {
+  const p = parseInt(page);
+  const l = parseInt(limit);
   
-  const { rows } = await db.query(queryActivityLogs);
+  const offset = (p - 1) * l;
+  console.log("offset", offset);
 
-  return rows;
-}
+  let typeFilter = [];
+
+  if (filter === 'added') typeFilter = [1, 2];
+  if (filter === 'edited') typeFilter = [3, 4];
+  if (filter === 'deleted') typeFilter = [5, 6];
+
+  const query = `
+    SELECT a.*, p.name as product_name, c.name as category_name 
+    FROM activity_logs a 
+    LEFT JOIN product p ON p.id = (a.metadata->>'productId')::int
+    LEFT JOIN categories c ON c.id = p.category
+    WHERE a.type = ANY($1)
+    ORDER BY a.date DESC
+    LIMIT $2 OFFSET $3
+  `;
+
+  const totalQuery = `
+    SELECT COUNT(*) FROM activity_logs a
+    WHERE a.type = ANY($1::int[])
+  `;
+  const totalResult = await db.query(totalQuery, [typeFilter]);
+  const total = parseInt(totalResult.rows[0].count);
+  // console.log("total", total);
+  // console.log("offset limit", offset + limit);
+
+  const { rows } = await db.query(query, [typeFilter, limit, offset]);
+
+  return {
+    data: rows,
+    hasMore: offset + l < total
+  };
+};
 
 export const getOrders = async(statuses) => {
   const query = `SELECT o.queue_number, o.id AS order_id, o.total_amount, o.created_at,

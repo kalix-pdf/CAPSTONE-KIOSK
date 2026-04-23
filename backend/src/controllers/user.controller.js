@@ -136,7 +136,7 @@ export const addActivityLogs = async (req, res, next) => {
 
 export const fetchAllActivityLogs = async (req, res, next) => {
     try {
-        const result = await userService.getActivityLogs();
+        const result = await userService.getActivityLogs(req.query.page, req.query.limit, req.query.filter);
         res.status(200).json(result);
 
     } catch (error) {

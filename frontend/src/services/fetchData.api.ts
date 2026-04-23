@@ -1,7 +1,7 @@
 import { API_URL } from "./url.api";
 import { Category, Product, TotalInventoryProps, ActivityLogProps,
    QueueTicket, AIOverview, PaginatedProducts,
-   customerOrderProps} from "./Props";
+   customerOrderProps, ActivityLogsResponse} from "./Props";
 
 export const fetchData = async <T>(endpoint: string): Promise<T> => {
   const response = await fetch(endpoint);
@@ -35,8 +35,9 @@ export const fetchTotalInventory = async(): Promise<TotalInventoryProps[]> => {
   return fetchData<TotalInventoryProps[]>(`${API_URL}/api/admin/fetchTotalDashboard`);
 }
 
-export const fetchActivityLogs = async(): Promise<ActivityLogProps[]> => {
-  return fetchData<ActivityLogProps[]>(`${API_URL}/api/admin/ActivityLogs`);
+//logs with pagination
+export const fetchActivityLogs = async(page: number, limit: number, filter: string): Promise<ActivityLogsResponse> => {
+  return fetchData<ActivityLogsResponse>(`${API_URL}/api/admin/ActivityLogs?page=${page}&limit=${limit}&filter=${filter}`);
 }
 
 export const fetchOrders = async(statuses: number []): Promise<QueueTicket[]> => {

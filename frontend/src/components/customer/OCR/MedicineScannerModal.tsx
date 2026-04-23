@@ -153,7 +153,7 @@ export function MedicineScannerModal({ open, onOpenChange, onBrowse }: MedicineS
             </div>
         </SheetContent>
       </Sheet>
-      <DialogContent className={`${scanningStatus === 'ready' ? 'max-w-2xl' : ' max-w-6xl'} max-h-[90vh] overflow-y-auto [&>button]:hidden`}
+      <DialogContent className={`${scanningStatus === 'ready' ? 'max-w-2xl' : 'min-h-screen max-w-6xl'} max-h-[90vh] overflow-y-auto [&>button]:hidden`}
         hideCloseButton={true}
         onInteractOutside={(e) => {
           if (scanningStatus === 'camera') {
@@ -205,7 +205,7 @@ export function MedicineScannerModal({ open, onOpenChange, onBrowse }: MedicineS
                   <div>
                     <div className="w-full overflow-hidden border-2 border-lumot-900 rounded-lg">
                       <video ref={videoRef} autoPlay playsInline
-                        muted className="w-full h-[400px] object-contain"/>
+                        muted className="w-full object-contain"/>
                     </div>
 
                     <div className="flex gap-3 justify-center">

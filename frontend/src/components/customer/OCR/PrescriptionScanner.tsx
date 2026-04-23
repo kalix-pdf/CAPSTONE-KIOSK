@@ -129,7 +129,7 @@ export function PrescriptionScanner({ open, onBrowser, onOpenChange }: Prescript
         </SheetContent>
       </Sheet>
       <DialogContent
-      className={`${scanningStatus === "camera" ? "max-w-6xl" : "max-w-2xl"} max-h-[90vh] overflow-y-auto [&>button]:hidden`}
+      className={`${scanningStatus === "camera" ? "min-h-screen max-w-6xl" : "max-w-2xl"} max-h-[90vh] overflow-y-auto [&>button]:hidden`}
       hideCloseButton
       onInteractOutside={(e) => {
         if (scanningStatus === "camera") e.preventDefault();
@@ -187,10 +187,10 @@ export function PrescriptionScanner({ open, onBrowser, onOpenChange }: Prescript
               <div>
                 <div className="w-full overflow-hidden border-2 border-lumot-900 rounded-lg">
                   {/* <p className="absolute mt-">Click the capture photo</p> */}
-                  <video ref={videoRef} autoPlay playsInline muted className="w-full h-[400px] object-contain" />
+                  <video ref={videoRef} autoPlay playsInline muted className="w-full object-contain" />
                   <div
-                    className="absolute border-4 border-green-500"
-                    style={{ width: 500, height: 250, top: "45%", left: "50%", transform: "translate(-50%, -50%)" }}
+                    className="absolute border-4 border-green-500 transition-opacity animate-in fade-in"
+                    style={{ width: 500, height: 600, top: "51%", left: "50%", transform: "translate(-50%, -50%)", animationDuration: "4000ms" }}
                   />
                 </div>
                 <div className="flex gap-3 justify-center mt-3">

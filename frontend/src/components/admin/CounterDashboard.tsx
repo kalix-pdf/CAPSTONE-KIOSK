@@ -61,7 +61,7 @@ export function CounterDashboard() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card padded className="border-orange-400">
+          <Card padded className="border-orange-400 bg-gradient-to-br from-orange-50 to-orange-100">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle>Waiting in Queue</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
@@ -74,7 +74,7 @@ export function CounterDashboard() {
             </CardContent>
           </Card>
 
-          <Card padded className="border-purple-500">
+          <Card padded className="border-purple-500 bg-gradient-to-br from-blue-100 via-green-100 to-blue-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle>Est. Wait Time</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
@@ -87,7 +87,7 @@ export function CounterDashboard() {
             </CardContent>
           </Card>
 
-          <Card padded className="border-lumot-900">
+          <Card padded className="border-lumot-900 bg-gradient-to-br from-green-100 via-white-200 to-green-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle>Completed Today</CardTitle>
               <CheckCircle className="h-4 w-4 text-muted-foreground" />

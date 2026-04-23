@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { QueueTicketProps } from "./QueueTicketProps";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { PrintReceipt } from "../../../services/order.api";
 
 export const QueueTicket = ({ QueueNumber, phoneNumber, orderItems, totalAmount }: QueueTicketProps) => {
   const [showTicketDialog, setShowTicketDialog] = useState(true);
@@ -10,13 +11,28 @@ export const QueueTicket = ({ QueueNumber, phoneNumber, orderItems, totalAmount 
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (showTicketDialog && countdown > 0) {
-      const timer = setTimeout(() => {setCountdown(countdown - 1)}, 1000);
+    const print = async () => {
+      try {
+        await PrintReceipt({ QueueNumber, phoneNumber, orderItems, totalAmount });
+      } catch (err) {
+        console.error("Failed to print receipt:", err);
+      }
+    };
+
+    print();
+  }, []);
+
+    useEffect(() => {
+      if (!showTicketDialog) return;
+
+      if (countdown === 0) {
+        navigate("/", { replace: true });
+        return;
+      }
+
+      const timer = setTimeout(() => setCountdown((prev) => prev - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (countdown === 0) {
-      navigate("/", { replace: true });
-    }
-  }, [showTicketDialog, countdown]);
+    }, [countdown, showTicketDialog]);
 
   return (
     <div>

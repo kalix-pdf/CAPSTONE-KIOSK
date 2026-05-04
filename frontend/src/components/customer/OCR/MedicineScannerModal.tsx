@@ -28,15 +28,17 @@ export function MedicineScannerModal({ open, onOpenChange, onBrowse }: MedicineS
   const [recognizedMeds, setRecognizedMeds] = useState<Product | null>();
   const [aiInfo, setAIinfo] = useState<AIOverview>(); 
   const [error, setError] = useState<string>('');
-  const { addToCart, setScannedID, setExtractedText, getTotalItems } = useCart();
+  const { addToCart, setScannedID, scannedID, setExtractedText, getTotalItems } = useCart();
   const [isCartOpen, setIsCartOpen] = useState(false);
   
   useEffect(() => {
     if (open) {
+      setScannedID(0);
       setScanningStatus('ready');
       setRecognizedMeds(null);
       setExtractedText(undefined);
       stopCamera();
+      
     }
   }, [open]);
 
@@ -114,6 +116,7 @@ export function MedicineScannerModal({ open, onOpenChange, onBrowse }: MedicineS
   
     const handleCancelCamera = () => {
       stopCamera();
+      setScannedID(0);
       setScanningStatus('ready');
     };
     
@@ -126,6 +129,7 @@ export function MedicineScannerModal({ open, onOpenChange, onBrowse }: MedicineS
   
     const handleReset = () => {
       setRecognizedMeds(null);
+      setScannedID(0);
       setExtractedText(undefined);
       setScanningStatus('ready');
     };
@@ -267,7 +271,7 @@ export function MedicineScannerModal({ open, onOpenChange, onBrowse }: MedicineS
                 <InvalidDocumentView
                   error={AIResponse.extractedText.Error ?? "No prescription detected."}
                   onReset={handleReset}
-                  onCancel={() => { if (getTotalItems() > 0) setIsCartOpen(true); onOpenChange(false); }}
+                  onCancel={() => { if (getTotalItems() > 0) setIsCartOpen(true); onOpenChange(false); setScannedID(0); }}
                   errorTitle="Not A Medicine Label or Packaging"
                   errorIllustration="The scanned image does not appear to be a valid Medicine packaging.
                     Please ensure you are scanning a Medicine"

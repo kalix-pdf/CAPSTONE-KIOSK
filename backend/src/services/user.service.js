@@ -42,6 +42,7 @@ export const checkExistingScannedPrescription = async(scanned_id) => {
 export const checkMaxQuantityOrdered = async(orderId, productId, quantity) => {
   const { rows } = await db.query(`SELECT total_ordered_medicine_quantity FROM order_items WHERE order_id = $1 AND product_id = $2`, [orderId, productId]);
   const currentTotalOrderedQuantity = rows.length > 0 ? rows[0].total_ordered_medicine_quantity : 0;
+  console.log("order id", orderId)
 
   const totalLimitMedicineQuantity = `SELECT total_limit_medicine_quantity FROM product_description WHERE product_id = $1`;
   const { rows: limitRows } = await db.query(totalLimitMedicineQuantity, [productId]);
@@ -74,13 +75,16 @@ export const checkMaxQuantityOrdered = async(orderId, productId, quantity) => {
 export const createOrder = async (orderData) => {
   // console.log("Received order data:", orderData);
   const { items, phone_number, total_amount, scannedID, extractedText } = orderData;
-  const client = await db.connect();
+  console.log("scan id", scannedID);
+  // return { success: false, message: "maintenance mode" };
 
+  const client = await db.connect();
   try {
     await client.query("BEGIN"); 
     
     const existing = await checkExistingScannedPrescription(scannedID);
     let orderId;
+    console.log("existing: ", existing);
 
     if (existing) {
       const updateOrderQuery = `UPDATE orders SET phone_number = $1, total_amount = $2, status = 1 WHERE image_data_id = $3 RETURNING id`;
@@ -104,10 +108,17 @@ export const createOrder = async (orderData) => {
         }
       }
 
-    } else {
-      const orderInsertQuery = `INSERT INTO orders (phone_number, status, total_amount, image_data_id) VALUES ($1, 1, $2, $3) RETURNING id`;
-      const orderResult = await client.query(orderInsertQuery, [phone_number, total_amount, scannedID]);
-      orderId = orderResult.rows[0].id;
+    } 
+    else {
+      if (scannedID > 0) {
+        const orderInsertQuery = `INSERT INTO orders (phone_number, status, total_amount, image_data_id) VALUES ($1, 1, $2, $3) RETURNING id`;
+        const orderResult = await client.query(orderInsertQuery, [phone_number, total_amount, scannedID]);
+        orderId = orderResult.rows[0].id;  
+      } else {
+        const orderInsertQuery = `INSERT INTO orders (phone_number, status, total_amount) VALUES ($1, 1, $2) RETURNING id`;
+        const orderResult = await client.query(orderInsertQuery, [phone_number, total_amount]);
+        orderId = orderResult.rows[0].id;
+      }
   
       for (const item of items) {
         const orderItemsInsertQuery = `INSERT INTO order_items (order_id, product_id, quantity, total_ordered_medicine_quantity) VALUES ($1, $2, $3, $4)`;

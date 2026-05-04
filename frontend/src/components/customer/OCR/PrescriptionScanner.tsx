@@ -33,6 +33,7 @@ export function PrescriptionScanner({ open, onBrowser, onOpenChange }: Prescript
         setRecognizedMeds([]);
         setExtractedText(undefined);
         stopCamera();
+        setScannedID(0);
       }
     }, [open]);
 
@@ -88,6 +89,7 @@ export function PrescriptionScanner({ open, onBrowser, onOpenChange }: Prescript
 
   const handleCancelCamera = () => {
     stopCamera();
+    setScannedID(0);
     setScanningStatus('ready');
   };
   
@@ -100,6 +102,7 @@ export function PrescriptionScanner({ open, onBrowser, onOpenChange }: Prescript
   const handleReset = () => {
     setRecognizedMeds([]);
     setExtractedText(undefined);
+    setScannedID(0);
     // setScannedImageUrl('');
     setScanningStatus('ready');
   };

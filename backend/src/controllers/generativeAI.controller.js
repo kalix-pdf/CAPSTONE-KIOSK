@@ -470,13 +470,16 @@ export async function MedinceScannerAIPowered (req, res) {
             });
         }
 
+        console.log("scan id from ai", scannedID);
+
         return res.status(200).json({scanned_id: scannedID, extractedText: parsed, RecognizedMeds: flatResults });
 
     //   const hardcodedResponse = {
-    //     extractedText: {
-    //         Valid: false,
-    //         Error: "Invalid Input: No medicine label detected."
-    //     }
+        // extractedText: {
+        //     Valid: false,
+        //     Error: "Invalid Input: No medicine label detected."
+        // }
+        // scanned_id: scannedID,
         // extractedText: {
         //     Valid: true,
         //     RecognizedMeds: ["Biogesic"],
@@ -510,7 +513,6 @@ export async function MedinceScannerAIPowered (req, res) {
         // ],
         //     message: undefined,
         // };
-
         // return res.status(200).json(hardcodedResponse);
             
     } catch (error) {

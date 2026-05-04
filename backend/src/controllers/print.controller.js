@@ -50,7 +50,7 @@ export async function printReceipt(req, res) {
 
       const name  = String(rawName).padEnd(18).slice(0, 20);
       const qty   = `x${rawQty}`.padStart(2);
-      const price = `P${(Number(rawPrice) * Number(rawQty)).toFixed(2)}`.padStart(9);
+      const price = `P${(Number(rawPrice)).toFixed(2)}`.padStart(9);
       orderLines += `${name}${qty}${price}\n`;
     }
 

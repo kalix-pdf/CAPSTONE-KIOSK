@@ -161,7 +161,7 @@ export function QueueManagement({ orders, completedToday, waitingQueue}  : Queue
                     <Button onClick={() => setShowPrescriptionDialog(true)}
                       size="lg" variant="outline" className="bg-blue-50 hover:bg-blue-100">
                       <Eye className="h-5 w-5 mr-2" />
-                      View Prescription
+                      View Scanned Prescription / Medicine
                       {(currentlyServing[0].prescriptiondata?.extractedText?.AccuracyLevel ?? 100) < 90 && (
                         <Badge variant="destructive" className="ml-2">
                           <AlertTriangle className="h-3 w-3 mr-1" />

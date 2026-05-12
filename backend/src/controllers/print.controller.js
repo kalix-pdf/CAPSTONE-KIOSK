@@ -19,7 +19,6 @@ export async function printReceipt(req, res) {
   try {
     device = new USB(4070, 33054);
 
-    // Open + reset to clear any stall from previous session
     await new Promise((resolve, reject) => {
       device.open((err) => {
         if (err) return reject(err);
@@ -96,7 +95,6 @@ export async function printReceipt(req, res) {
           .cut()
           .close();
 
-        // Wait for printer buffer to fully flush before resolving
         setTimeout(resolve, 1500);
       } catch (printErr) {
         reject(printErr);
@@ -108,7 +106,6 @@ export async function printReceipt(req, res) {
   } catch (err) {
     console.error("Print error:", err);
 
-    // Attempt to close device even on error to reset USB state
     if (device?.device) {
       try {
         device.device.reset(() => {});

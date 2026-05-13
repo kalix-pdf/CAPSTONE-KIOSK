@@ -234,7 +234,7 @@ export const EditMedication = ( { product, onClose, getActiveProducts}: { produc
 
                             <div className="space-y-2">
                                 <Label htmlFor="barcode">Barcode</Label>
-                                <Input id="barcode" value={formData.barcode}
+                                <Input type="number" id="barcode" value={formData.barcode}
                                     onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
                                     placeholder="e.g., 5601234567890" required />
                             </div>

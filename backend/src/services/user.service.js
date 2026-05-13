@@ -39,19 +39,27 @@ export const checkExistingScannedPrescription = async(scanned_id) => {
 }
 
 //check if reaching the maximum quantity of medicine ordered for a specific product in an order
-export const checkMaxQuantityOrdered = async(orderId, productId, quantity) => {
+export const checkMaxQuantityOrdered = async(orderId, productId, quantity, prescription = true) => {
+  //check first if the product has a total limit quantity for otc medicines
+  if (!prescription) {
+    const totalLimitMedicineQuantity = `SELECT total_limit_medicine_quantity FROM product_description WHERE product_id = $1`;
+    const { rows: limitRows } = await db.query(totalLimitMedicineQuantity, [productId]);
+    
+    const totalLimit = limitRows[0].total_limit_medicine_quantity;
+    
+    //imediate return if not prescription and no total limit set for the medicine
+    if (!prescription){
+      return true ? quantity > totalLimit : false;
+    }
+  }
+
+  //for prescription checking of maximum quantity
   const { rows } = await db.query(`SELECT total_ordered_medicine_quantity FROM order_items WHERE order_id = $1 AND product_id = $2`, [orderId, productId]);
   const currentTotalOrderedQuantity = rows.length > 0 ? rows[0].total_ordered_medicine_quantity : 0;
-  console.log("order id", orderId)
-
-  const totalLimitMedicineQuantity = `SELECT total_limit_medicine_quantity FROM product_description WHERE product_id = $1`;
-  const { rows: limitRows } = await db.query(totalLimitMedicineQuantity, [productId]);
-  
-  const totalLimit = limitRows[0].total_limit_medicine_quantity;
 
   const { rows: scannedRows } = await db.query(`SELECT elem->>'quantity' AS prescribed_quantity, 
-      elem->>'refills' AS refills FROM scanned_image, LATERAL jsonb_array_elements(ordered_medicine) AS elem 
-      WHERE (elem->>'product_id')::int = $1 ORDER BY id DESC LIMIT 1`, [productId]);
+  elem->>'refills' AS refills FROM scanned_image, LATERAL jsonb_array_elements(ordered_medicine) AS elem 
+  WHERE (elem->>'product_id')::int = $1 ORDER BY id DESC LIMIT 1`, [productId]);
 
   const prescribedQuantity = parseInt(scannedRows[0].prescribed_quantity ?? '0', 10);
   const refills = parseInt(scannedRows[0].refills ?? '0', 10);
@@ -65,9 +73,6 @@ export const checkMaxQuantityOrdered = async(orderId, productId, quantity) => {
     if (projectedTotal > totalAllowedQuantity) return true;
     return false;
   }
-
-  if (totalLimit === 0) return false;
-  if (totalLimit > 0 && projectedTotal > totalLimit) return true; 
 
   return false;
 }
@@ -84,6 +89,7 @@ export const createOrder = async (orderData) => {
     
     const existing = await checkExistingScannedPrescription(scannedID);
     let orderId;
+    let prescription = false;
     console.log("existing: ", existing);
 
     if (existing) {
@@ -121,6 +127,11 @@ export const createOrder = async (orderData) => {
       }
   
       for (const item of items) {
+        if (await checkMaxQuantityOrdered(orderId, item.product_id, item.quantity, prescription)) {
+          await client.query("ROLLBACK");
+          return { success: false, message: `Maximum quantity for the ${item.item_name} has been reached. You cannot add it to the order.` };
+        }
+        
         const orderItemsInsertQuery = `INSERT INTO order_items (order_id, product_id, quantity, total_ordered_medicine_quantity) VALUES ($1, $2, $3, $4)`;
         await client.query(orderItemsInsertQuery, [orderId, item.product_id, item.quantity, item.quantity]);
       }

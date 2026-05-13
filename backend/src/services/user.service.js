@@ -39,18 +39,17 @@ export const checkExistingScannedPrescription = async(scanned_id) => {
 }
 
 //check if reaching the maximum quantity of medicine ordered for a specific product in an order
-export const checkMaxQuantityOrdered = async(orderId, productId, quantity, prescription = true) => {
+export const checkMaxQuantityOrdered = async(orderId, productId, quantity, prescription) => {
   //check first if the product has a total limit quantity for otc medicines
+  console.log("checking prescription status:", prescription);
   if (!prescription) {
     const totalLimitMedicineQuantity = `SELECT total_limit_medicine_quantity FROM product_description WHERE product_id = $1`;
     const { rows: limitRows } = await db.query(totalLimitMedicineQuantity, [productId]);
     
-    const totalLimit = limitRows[0].total_limit_medicine_quantity;
+    const totalLimit = limitRows[0]?.total_limit_medicine_quantity || 10;
     
-    //imediate return if not prescription and no total limit set for the medicine
-    if (!prescription){
-      return true ? quantity > totalLimit : false;
-    }
+    return true ? quantity >= totalLimit : false;
+  
   }
 
   //for prescription checking of maximum quantity
@@ -60,10 +59,11 @@ export const checkMaxQuantityOrdered = async(orderId, productId, quantity, presc
   const { rows: scannedRows } = await db.query(`SELECT elem->>'quantity' AS prescribed_quantity, 
   elem->>'refills' AS refills FROM scanned_image, LATERAL jsonb_array_elements(ordered_medicine) AS elem 
   WHERE (elem->>'product_id')::int = $1 ORDER BY id DESC LIMIT 1`, [productId]);
+  const extractNumber = (str) => parseInt((str ?? '0').match(/\d+/)?.[0] ?? '0', 10);
 
-  const prescribedQuantity = parseInt(scannedRows[0].prescribed_quantity ?? '0', 10);
-  const refills = parseInt(scannedRows[0].refills ?? '0', 10);
-
+  const prescribedQuantity = extractNumber(scannedRows[0].prescribed_quantity);
+  const refills = extractNumber(scannedRows[0].refills);
+  
   const projectedTotal = currentTotalOrderedQuantity + quantity;
 
   if (prescribedQuantity > 0) {
@@ -78,9 +78,8 @@ export const checkMaxQuantityOrdered = async(orderId, productId, quantity, presc
 }
 
 export const createOrder = async (orderData) => {
-  // console.log("Received order data:", orderData);
   const { items, phone_number, total_amount, scannedID, extractedText } = orderData;
-  console.log("scan id", scannedID);
+  // console.log("scan id", scannedID);
   // return { success: false, message: "maintenance mode" };
 
   const client = await db.connect();
@@ -89,16 +88,15 @@ export const createOrder = async (orderData) => {
     
     const existing = await checkExistingScannedPrescription(scannedID);
     let orderId;
-    let prescription = false;
-    console.log("existing: ", existing);
-
+    let prescription = true ? scannedID > 0 : false;
+    
     if (existing) {
       const updateOrderQuery = `UPDATE orders SET phone_number = $1, total_amount = $2, status = 1 WHERE image_data_id = $3 RETURNING id`;
       const updateResult = await client.query(updateOrderQuery, [phone_number, total_amount, scannedID]);
       orderId = updateResult.rows[0].id;
 
       for (const item of items) {
-        if (await checkMaxQuantityOrdered(orderId, item.product_id, item.quantity)) {
+        if (await checkMaxQuantityOrdered(orderId, item.product_id, item.quantity, prescription)) {
           await client.query("ROLLBACK");
           return { success: false, message: `Maximum quantity for the ${item.item_name} has been reached. You cannot add it to the order.` };
         }
@@ -192,7 +190,7 @@ export const updateOCRImageData = async(scannedID, matchedProducts = []) => {
 
 export const saveOCRImage = async (imageUrl, ocrTypeNum, patientInfo, dateIssued, matchedProducts = []) => {
   const client = await db.connect();
-  console.log(matchedProducts);
+  // console.log(matchedProducts);
   try {
     await client.query("BEGIN");
     
@@ -323,7 +321,7 @@ export const getActivityLogs = async (page, limit, filter) => {
   const l = parseInt(limit);
   
   const offset = (p - 1) * l;
-  console.log("offset", offset);
+  // console.log("offset", offset);
 
   let typeFilter = [];
 

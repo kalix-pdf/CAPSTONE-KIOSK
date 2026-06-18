@@ -61,8 +61,8 @@ export const checkMaxQuantityOrdered = async(orderId, productId, quantity, presc
   WHERE (elem->>'product_id')::int = $1 ORDER BY id DESC LIMIT 1`, [productId]);
   const extractNumber = (str) => parseInt((str ?? '0').match(/\d+/)?.[0] ?? '0', 10);
 
-  const prescribedQuantity = extractNumber(scannedRows[0].prescribed_quantity);
-  const refills = extractNumber(scannedRows[0].refills);
+  const prescribedQuantity = extractNumber(scannedRows?.[0]?.prescribed_quantity ?? '');
+  const refills = extractNumber(scannedRows?.[0]?.refills ?? '');
   
   const projectedTotal = currentTotalOrderedQuantity + quantity;
 
@@ -79,7 +79,7 @@ export const checkMaxQuantityOrdered = async(orderId, productId, quantity, presc
 
 export const createOrder = async (orderData) => {
   const { items, phone_number, total_amount, scannedID, extractedText } = orderData;
-  // console.log("scan id", scannedID);
+  console.log("scan id", scannedID);
   // return { success: false, message: "maintenance mode" };
 
   const client = await db.connect();
